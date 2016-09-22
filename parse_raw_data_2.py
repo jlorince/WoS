@@ -169,7 +169,11 @@ if __name__ == '__main__':
         logger.addHandler(hdlr)
         logger.setLevel(logging.INFO)
 
-    filetypes = sys.argv[2:]
+        filetypes = sys.argv[2:]
+
+    else:
+
+        filetypes = sys.argv[1:]
 
     for f in filetypes:
         if f not in allowed_filetypes:
