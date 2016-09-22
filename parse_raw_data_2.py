@@ -187,6 +187,6 @@ if __name__ == '__main__':
     record_count = pool.map(func_partial,years)
     pool.close()
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
-    log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count,td))
+    log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
 
 
