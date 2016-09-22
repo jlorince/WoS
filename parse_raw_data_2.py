@@ -126,7 +126,7 @@ def process(record,handles):
         handles['references'].write("{}\t{}\t{}\t{}\n".format(uid,len(references),'|'.join(references),no_uid))
 
 
-def go(year,filetypes=[],fromzip = True):
+def go(year,fromzip = True):
     year_start = time.time()
     if fromzip:
         records = zipreader(year)
