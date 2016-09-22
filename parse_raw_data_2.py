@@ -16,6 +16,7 @@ from functools import partial
 
 years = np.arange(1950,2016,1).astype(str)
 basedir = 'Z:/DSSHU_ANNUAL_1950-2015/'
+output_dir = 'P:/Projects/WoS/WoS/parsed/'
 do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
@@ -133,7 +134,7 @@ def go(year,filetypes=[],fromzip = True):
         filelist = [f for f in glob.glob(basedir+'*') if f[f.rfind('/'):][4:8]==year]
         records = reader(filelist)
     records_logged = 0
-    files = ['parsed/{}/{}.txt.gz'.format(kind,year) for kind in filetypes]
+    files = ['{}{}/{}.txt.gz'.format(output_dir,kind,year) for kind in filetypes]
     handles = dict(zip(filetypes,[gzip.open(f,'wb') for f in files]))
     for record in records:
         result = process(record,handles)
