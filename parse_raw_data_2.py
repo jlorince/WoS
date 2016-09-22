@@ -122,7 +122,7 @@ def process(record,handles):
         handles['references'].write("{}\t{}\t{}\t{}\n".format(uid,len(references),'|'.join(references),no_uid))
 
 
-def go(year,filetypes=[],fromzip = True):
+def go(year,logger,filetypes=[],fromzip = True):
     year_start = time.time()
     if fromzip:
         records = zipreader(year)
@@ -170,7 +170,7 @@ if __name__ == '__main__':
             os.mkdir(dname)
 
     pool = mp.Pool(N)
-    func_partial = partial(go,filetypes=filetypes,fromzip=True)
+    func_partial = partial(go,logger=logger,filetypes=filetypes,fromzip=True)
     record_count = pool.map(func_partial,years)
     pool.close()
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
