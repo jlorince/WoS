@@ -7,6 +7,7 @@ from lxml import etree
 sys.path.append('../pathos')
 #from pathos import multiprocessing as mp
 from pathos.multiprocessing import ProcessingPool as Pool
+from pathos.multiprocessing import cpu_count
 import numpy as np
 import time
 import glob
@@ -148,7 +149,7 @@ def go(year,logger,filetypes=[],fromzip = True):
 
 
 
-N = mp.cpu_count()
+N = cpu_count()
 if __name__ == '__main__':
 
     overall_start = time.time()
