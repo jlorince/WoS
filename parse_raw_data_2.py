@@ -3,7 +3,9 @@ import os
 import zipfile,io,gzip
 import pandas as pd
 from lxml import etree
-import multiprocessing as mp
+#import multiprocessing as mp
+sys.path.append('../pathos')
+from pathos import multiprocessing as mp
 import numpy as np
 import time
 import glob
@@ -14,6 +16,7 @@ from functools import partial
 years = np.arange(1950,2016,1).astype(str)
 basedir = 'Z:/DSSHU_ANNUAL_1950-2015/'
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
+
 allowed_filetypes = ['metadata','references','authors','subjects']
 
 
@@ -133,11 +136,11 @@ def go(year,filetypes=[],fromzip = True):
         result = process(record,handles)
         records_logged += 1
         if records_logged % 10000 == 0:
-            print "{} --> {} records complete".format(year,records_logged)
+            logger.info("{} --> {} records complete".format(year,records_logged))
     for handle in handles.values():
         handle.close()
     td = str(datetime.timedelta(seconds=time.time()-year_start))
-    print "{} --> ALL records logged ({}, {})".format(year,records_logged,td)
+    logger.info("{} --> ALL records logged ({}, {})".format(year,records_logged,td))
     return records_logged
 
 
@@ -171,6 +174,6 @@ if __name__ == '__main__':
     record_count = pool.map(func_partial,years)
     pool.close()
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
-    print "Parsing complete: {} total records processed in {}".format(sum(record_count,td))
+    logger.info("Parsing complete: {} total records processed in {}".format(sum(record_count,td)))
 
 
