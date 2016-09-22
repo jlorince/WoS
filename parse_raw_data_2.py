@@ -11,6 +11,12 @@ import datetime
 import logging
 from functools import partial
 
+years = np.arange(1950,2016,1).astype(str)
+    #basedir = 'Z:/DSSHU_ANNUAL_1950-2015/'
+    #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
+
+allowed_filetypes = ['metadata','references','authors','subjects']
+
 
 
 def reader(files):
@@ -114,7 +120,7 @@ def process(record,handles):
         handles['references'].write("{}\t{}\t{}\t{}\n".format(uid,len(references),'|'.join(references),no_uid))
 
 
-def go(year,filetypes=[],fromzip = True):
+def go(year,logger,filetypes=[],fromzip = True):
     year_start = time.time()
     if fromzip:
         records = zipreader(year)
@@ -152,14 +158,6 @@ if __name__ == '__main__':
     logger.addHandler(hdlr)
     logger.setLevel(logging.INFO)
 
-    #z = zipfile.ZipFile("{}{}_DSSHU.zip".format(basedir,year))
-
-
-    years = np.arange(1950,2016,1).astype(str)
-    #basedir = 'Z:/DSSHU_ANNUAL_1950-2015/'
-    #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
-
-    allowed_filetypes = ['metadata','references','authors','subjects']
     filetypes = sys.argv[2:]
 
     for f in filetypes:
@@ -170,7 +168,7 @@ if __name__ == '__main__':
             os.mkdir(dname)
 
     pool = mp.Pool(N)
-    func_partial = partial(go,filetypes=filetypes,fromzip=True)
+    func_partial = partial(go,filetypes=filetypes,fromzip=True,logger=logger)
     record_count = pool.map(func_partial,years)
     pool.close()
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
