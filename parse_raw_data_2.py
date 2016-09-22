@@ -17,6 +17,7 @@ from functools import partial
 
 years = np.arange(1950,2016,1).astype(str)
 basedir = 'Z:/DSSHU_ANNUAL_1950-2015/'
+do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
 allowed_filetypes = ['metadata','references','authors','subjects']
@@ -124,7 +125,7 @@ def process(record,handles):
         handles['references'].write("{}\t{}\t{}\t{}\n".format(uid,len(references),'|'.join(references),no_uid))
 
 
-def go(year,logger,filetypes=[],fromzip = True):
+def go(year,filetypes=[],fromzip = True):
     year_start = time.time()
     if fromzip:
         records = zipreader(year)
@@ -138,14 +139,18 @@ def go(year,logger,filetypes=[],fromzip = True):
         result = process(record,handles)
         records_logged += 1
         if records_logged % 10000 == 0:
-            logger.info("{} --> {} records complete".format(year,records_logged))
+            log_handler("{} --> {} records complete".format(year,records_logged))
     for handle in handles.values():
         handle.close()
     td = str(datetime.timedelta(seconds=time.time()-year_start))
-    logger.info("{} --> ALL records logged ({}, {})".format(year,records_logged,td))
+    log_handler("{} --> ALL records logged ({}, {})".format(year,records_logged,td))
     return records_logged
 
-
+def log_handler(s):
+    if do_logging:
+        log_handler(s)
+    else:
+        print s
 
 
 
@@ -154,13 +159,15 @@ if __name__ == '__main__':
 
     overall_start = time.time()
 
-    logpath = sys.argv[1]
-    logger = logging.getLogger('WoS processing')
-    hdlr = logging.FileHandler(logpath)
-    formatter = logging.Formatter('%(asctime)s %(message)s')
-    hdlr.setFormatter(formatter)
-    logger.addHandler(hdlr)
-    logger.setLevel(logging.INFO)
+    if do_logging:
+
+        logpath = sys.argv[1]
+        logger = logging.getLogger('WoS processing')
+        hdlr = logging.FileHandler(logpath)
+        formatter = logging.Formatter('%(asctime)s %(message)s')
+        hdlr.setFormatter(formatter)
+        logger.addHandler(hdlr)
+        logger.setLevel(logging.INFO)
 
     filetypes = sys.argv[2:]
 
@@ -172,10 +179,10 @@ if __name__ == '__main__':
             os.mkdir(dname)
 
     pool = Pool(N)
-    func_partial = partial(go,logger=logger,filetypes=filetypes,fromzip=True)
+    func_partial = partial(go,filetypes=filetypes,fromzip=True)
     record_count = pool.map(func_partial,years)
     pool.close()
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
-    logger.info("Parsing complete: {} total records processed in {}".format(sum(record_count,td)))
+    log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count,td))
 
 
