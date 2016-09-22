@@ -3,11 +3,10 @@ import os
 import zipfile,io,gzip
 import pandas as pd
 from lxml import etree
-#import multiprocessing as mp
-sys.path.append('../pathos')
+import multiprocessing as mp
 #from pathos import multiprocessing as mp
-from pathos.multiprocessing import ProcessingPool as Pool
-from pathos.multiprocessing import cpu_count
+#from pathos.multiprocessing import ProcessingPool as Pool
+#from pathos.multiprocessing import cpu_count
 import numpy as np
 import time
 import glob
@@ -21,6 +20,7 @@ do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
 allowed_filetypes = ['metadata','references','authors','subjects']
+filetypes = ['metadata','references','subjects']
 
 
 
@@ -154,37 +154,37 @@ def log_handler(s):
 
 
 
-N = cpu_count()
+N = mp.cpu_count()
 if __name__ == '__main__':
 
     overall_start = time.time()
 
-    if do_logging:
+    # if do_logging:
 
-        logpath = sys.argv[1]
-        logger = logging.getLogger('WoS processing')
-        hdlr = logging.FileHandler(logpath)
-        formatter = logging.Formatter('%(asctime)s %(message)s')
-        hdlr.setFormatter(formatter)
-        logger.addHandler(hdlr)
-        logger.setLevel(logging.INFO)
+    #     logpath = sys.argv[1]
+    #     logger = logging.getLogger('WoS processing')
+    #     hdlr = logging.FileHandler(logpath)
+    #     formatter = logging.Formatter('%(asctime)s %(message)s')
+    #     hdlr.setFormatter(formatter)
+    #     logger.addHandler(hdlr)
+    #     logger.setLevel(logging.INFO)
 
-        filetypes = sys.argv[2:]
+    #     filetypes = sys.argv[2:]
 
-    else:
+    # else:
 
-        filetypes = sys.argv[1:]
+    #     filetypes = sys.argv[1:]
 
-    for f in filetypes:
-        if f not in allowed_filetypes:
-            raise("Not a valid filetype")
-        dname = 'parsed/{}'.format(f)
-        if not os.path.exists(dname):
-            os.mkdir(dname)
+    # for f in filetypes:
+    #     if f not in allowed_filetypes:
+    #         raise("Not a valid filetype")
+    #     dname = 'parsed/{}'.format(f)
+    #     if not os.path.exists(dname):
+    #         os.mkdir(dname)
 
     pool = Pool(N)
-    func_partial = partial(go,filetypes=filetypes,fromzip=True)
-    record_count = pool.map(func_partial,years)
+    #func_partial = partial(go,filetypes=filetypes,fromzip=True)
+    record_count = pool.map(go,years)
     pool.close()
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
