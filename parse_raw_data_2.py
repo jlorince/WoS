@@ -9,6 +9,7 @@ import time
 import glob
 import datetime
 import logging
+from functools import partial
 
 
 
@@ -113,7 +114,7 @@ def process(record,handles):
         handles['references'].write("{}\t{}\t{}\t{}\n".format(uid,len(references),'|'.join(references),no_uid))
 
 
-def go(year,fromzip = True):
+def go(year,filetypes=[],fromzip = True):
     year_start = time.time()
     if fromzip:
         records = zipreader(year)
@@ -169,7 +170,8 @@ if __name__ == '__main__':
             os.mkdir(dname)
 
     pool = mp.Pool(N)
-    record_count = pool.map(go,years)
+    func_partial = partial(go,filetypes=filetypes,fromzip=True)
+    record_count = pool.map(func_partial,years)
     pool.close()
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     logger.info("Parsing complete: {} total records processed in {}".format(sum(record_count,td)))
