@@ -5,7 +5,8 @@ import pandas as pd
 from lxml import etree
 #import multiprocessing as mp
 sys.path.append('../pathos')
-from pathos import multiprocessing as mp
+#from pathos import multiprocessing as mp
+from pathos.multiprocessing import ProcessingPool as Pool
 import numpy as np
 import time
 import glob
@@ -169,7 +170,7 @@ if __name__ == '__main__':
         if not os.path.exists(dname):
             os.mkdir(dname)
 
-    pool = mp.Pool(N)
+    pool = Pool(N)
     func_partial = partial(go,logger=logger,filetypes=filetypes,fromzip=True)
     record_count = pool.map(func_partial,years)
     pool.close()
