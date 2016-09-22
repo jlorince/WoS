@@ -12,9 +12,8 @@ import logging
 from functools import partial
 
 years = np.arange(1950,2016,1).astype(str)
-    #basedir = 'Z:/DSSHU_ANNUAL_1950-2015/'
-    #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
-
+basedir = 'Z:/DSSHU_ANNUAL_1950-2015/'
+#basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 allowed_filetypes = ['metadata','references','authors','subjects']
 
 
