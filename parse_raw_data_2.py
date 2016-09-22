@@ -90,7 +90,7 @@ def process(record,handles):
 
 
         result = '\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])+'\n'
-        handles['metadata'].write(result)
+        handles['metadata'].write(result.encode('utf8'))
 
     if 'authors' in handles:
 
@@ -112,7 +112,7 @@ def process(record,handles):
         subheading = find_text(paper.find('.//subheading'))
 
         categories = '|'.join([cat.text for cat in paper.findall(".//subject[@ascatype='extended']")])
-        handles['subjects'].write("{}\t{}\t{}\t{}\n".format(uid,heading,subheading,categories))
+        handles['subjects'].write("{}\t{}\t{}\t{}\n".format(uid,heading,subheading,categories).encode('utf8'))
 
     if 'references' in handles:
         references = []
@@ -123,7 +123,7 @@ def process(record,handles):
                 references.append(ref_uid.text)
             else:
                 no_uid += 1
-        handles['references'].write("{}\t{}\t{}\t{}\n".format(uid,len(references),'|'.join(references),no_uid))
+        handles['references'].write("{}\t{}\t{}\t{}\n".format(uid,len(references),'|'.join(references),no_uid).encode('utf8'))
 
 
 def go(year,fromzip = True):
@@ -139,12 +139,12 @@ def go(year,fromzip = True):
     for record in records:
         result = process(record,handles)
         records_logged += 1
-        if records_logged % 10000 == 0:
-            log_handler("{} --> {} records complete".format(year,records_logged))
+        #if records_logged % 10000 == 0:
+        #    log_handler("{} --> {} records complete".format(year,records_logged))
     for handle in handles.values():
         handle.close()
     td = str(datetime.timedelta(seconds=time.time()-year_start))
-    log_handler("{} --> ALL records logged ({}, {})".format(year,records_logged,td))
+    log_handler("{} --> ALL {} records logged in {}".format(year,records_logged,td))
     return records_logged
 
 def log_handler(s):
