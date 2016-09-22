@@ -152,13 +152,13 @@ if __name__ == '__main__':
 
     overall_start = time.time()
 
-    # logpath = sys.argv[1]
-    # logger = logging.getLogger('WoS processing')
-    # hdlr = logging.FileHandler(logpath)
-    # formatter = logging.Formatter('%(asctime)s %(message)s')
-    # hdlr.setFormatter(formatter)
-    # logger.addHandler(hdlr)
-    # logger.setLevel(logging.INFO)
+    logpath = sys.argv[1]
+    logger = logging.getLogger('WoS processing')
+    hdlr = logging.FileHandler(logpath)
+    formatter = logging.Formatter('%(asctime)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr)
+    logger.setLevel(logging.INFO)
 
     filetypes = sys.argv[2:]
 
