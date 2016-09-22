@@ -182,7 +182,7 @@ if __name__ == '__main__':
     #     if not os.path.exists(dname):
     #         os.mkdir(dname)
 
-    pool = Pool(N)
+    pool = mp.Pool(N)
     #func_partial = partial(go,filetypes=filetypes,fromzip=True)
     record_count = pool.map(go,years)
     pool.close()
