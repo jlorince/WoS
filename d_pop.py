@@ -33,7 +33,7 @@ def process_year(year):
     resampled = merged.groupby(['date','category']).count()
 
     td = str(datetime.timedelta(seconds=time.time()-year_start))
-    print "{} processed in {} (data length: {})".format(year,td)
+    print "{} processed in {} (data length: {})".format(year,td,len(resampled))
 
     return resampled
 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     pool = mp.Pool(N)
     final_result = pd.concat(pool.map(process_year,years))
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
-    log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
+    print "Parsing complete: {} total records processed in {} (total data length: {})".format(sum(record_count),td, len(final_result))
 
     pd.to_pickle('d_pop.pkl')
 
