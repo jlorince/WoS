@@ -13,9 +13,10 @@ def process_year(year):
 
     year_start = time.time()
 
-    metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'],engine='python')
+    metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'])
 
-    cats = pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','heading','subheading','categories'],engine='python')
+    cats = pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','heading','subheading','categories'])
+    cats['categories'].fillna('')
 
     merged = cats.merge(metadata,on='uid')
 
@@ -32,7 +33,7 @@ def process_year(year):
     resampled = merged.groupby(['date','category']).count()
 
     td = str(datetime.timedelta(seconds=time.time()-year_start))
-    print "{} processed in {}".format(year,td)
+    print "{} processed in {} (data length: {})".format(year,td)
 
     return resampled
 
