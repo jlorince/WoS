@@ -18,11 +18,13 @@ def process_year(year):
 
     merged = cats.merge(metadata,on='uid')
 
-    #merged['categories'] = merged['categories'].apply(lambda x: x.split('|'))
-
     rows = []
     for row in merged.itertuples():
-        [rows.append([row.date, row.uid, cat]) for cat in row.categories.split('|')]
+        try:
+            [rows.append([row.date, row.uid, cat]) for cat in row.categories.split('|')]
+        except Exception as e:
+            print row
+            raise(e)
 
     merged = pd.DataFrame(rows,columns=['date','uid','category'])
 
