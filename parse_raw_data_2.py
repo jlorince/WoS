@@ -21,7 +21,7 @@ do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
 allowed_filetypes = ['metadata','references','authors','subjects']
-filetypes = ['subjects']
+filetypes = ['metadata']
 
 
 
@@ -89,8 +89,8 @@ def process(record,handles):
         #### NEED CONFERENCE / JOURNAL / PUBLISHER INFO
 
 
-        result = '\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])+'\n'
-        handles['metadata'].write(result.encode('utf8'))
+        handles['metadata'].write('\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])+'\n'.encode('utf8'))
+    
 
     if 'authors' in handles:
 
