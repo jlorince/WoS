@@ -16,7 +16,7 @@ def process_year(year):
     metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'])
 
     cats = pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','heading','subheading','categories'])
-    cats['categories'].fillna('')
+    cats['categories'] = cats['categories'].fillna('')
 
     merged = cats.merge(metadata,on='uid')
 
