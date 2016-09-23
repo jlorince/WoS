@@ -21,7 +21,7 @@ do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
 allowed_filetypes = ['metadata','references','authors','subjects']
-filetypes = ['metadata','references','subjects']
+filetypes = ['subjects']
 
 
 
@@ -111,7 +111,7 @@ def process(record,handles):
         heading = find_text(paper.find('.//heading'))
         subheading = find_text(paper.find('.//subheading'))
 
-        categories = '|'.join([cat.text for cat in paper.findall(".//subject[@ascatype='extended']")])
+        categories = '|'.join([cat.text for cat in paper.findall(".//subject[@ascatype='traditional']")])
         handles['subjects'].write("{}\t{}\t{}\t{}\n".format(uid,heading,subheading,categories).encode('utf8'))
 
     if 'references' in handles:
