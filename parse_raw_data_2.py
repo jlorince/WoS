@@ -76,7 +76,7 @@ def process(record,handles):
         basic_data = pub_info.attrib
         date = basic_data.get('sortdate','')
         pubtype = basic_data.get('pubtype','')
-        volume = basic_data.get('volume','')
+        volume = basic_data.get('vol','')
         issue = basic_data.get('issue','')
         pages = find_text(pub_info.find('page'))
 
