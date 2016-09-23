@@ -89,7 +89,7 @@ def process(record,handles):
         #### NEED CONFERENCE / JOURNAL / PUBLISHER INFO
 
 
-        handles['metadata'].write('\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])+'\n'.encode('utf8'))
+        handles['metadata'].write(('\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])+'\n').encode('utf8'))
     
 
     if 'authors' in handles:

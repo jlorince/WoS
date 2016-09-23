@@ -47,7 +47,7 @@ def process_year_refs(year):
     refs = pd.read_table('{}references/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','total_refs','refs','missing_refs'],usecols=['uid','refs'])
     refs['refs'] = refs['refs'].fillna('')
 
-    cats = pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','heading','subheading','categories'],usecols=['uid','categories'])
+    cats = pd.concat([pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,y),compression='gzip',header=None,names=['uid','heading','subheading','categories'],usecols=['uid','categories']) for y in xrange(1950,year+1)])
     cats['categories'] = cats['categories'].fillna('')
 
     merged = refs.merge(metadata,on='uid')
