@@ -186,7 +186,7 @@ if __name__ == '__main__':
     pool = mp.Pool(N)
     #func_partial = partial(go,filetypes=filetypes,fromzip=True)
     record_count = pool.map(go,years)
-    pool.close()
+    #pool.close()
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
 
