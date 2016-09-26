@@ -20,8 +20,8 @@ output_dir = 'P:/Projects/WoS/WoS/parsed/'
 do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
-allowed_filetypes = ['metadata','references','authors','subjects']
-filetypes = ['metadata']
+allowed_filetypes = ['metadata','references','authors','subjects','keywords']
+filetypes = ['keywords']
 
 
 
@@ -125,6 +125,13 @@ def process(record,handles):
                 no_uid += 1
         handles['references'].write("{}\t{}\t{}\t{}\n".format(uid,len(references),'|'.join(references),no_uid).encode('utf8'))
 
+    if 'keywords' in handles:
+        keywords = paper.findall('.//keywords')
+        if len(keywods) > 0:
+            handles['keywords'].write("{}\t{}\t{}\n".format(uid,len(keywords),'|'.join(keywords)).encode('utf8'))
+
+
+
 
 def go(year,fromzip = True):
     year_start = time.time()
@@ -138,11 +145,13 @@ def go(year,fromzip = True):
     handles = dict(zip(filetypes,[gzip.open(f,'wb') for f in files]))
     for record in records:
         result = process(record,handles)
-        records_logged += 1
+        if result:
+            records_logged += 1
         #if records_logged % 10000 == 0:
         #    log_handler("{} --> {} records complete".format(year,records_logged))
     for handle in handles.values():
         handle.close()
+
     td = str(datetime.timedelta(seconds=time.time()-year_start))
     log_handler("{} --> ALL {} records logged in {}".format(year,records_logged,td))
     return records_logged

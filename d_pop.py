@@ -72,7 +72,7 @@ def process_year_refs(year):
     #print 'reference counts: {}'.format(len(merged))
 
     merged = merged.merge(cats,on='uid')
-    print 'merged with categories: {}'.format(len(merged))
+    #print 'merged with categories: {}'.format(len(merged))
 
 
     rows = []
