@@ -49,7 +49,7 @@ def process_year_refs(year):
     refs['refs'] = refs['refs'].fillna('')
     #print 'refs: {}'.format(len(refs))
 
-    cats = pd.concat([pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,y),compression='gzip',header=None,names=['uid','heading','subheading','categories'],usecols=['uid','categories']) for y in xrange(1950,year+1)])
+    cats = pd.concat([pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,y),compression='gzip',header=None,names=['uid','heading','subheading','categories'],usecols=['uid','categories']) for y in xrange(1950,int(year)+1)])
     cats['categories'] = cats['categories'].fillna('')
     #print 'cats: {}'.format(len(cats))
 
