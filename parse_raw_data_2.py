@@ -127,7 +127,7 @@ def process(record,handles):
 
     if 'keywords' in handles:
         keywords = paper.findall('.//keywords')
-        if len(keywods) > 0:
+        if len(keywords) > 0:
             handles['keywords'].write("{}\t{}\t{}\n".format(uid,len(keywords),'|'.join(keywords)).encode('utf8'))
 
 
