@@ -78,12 +78,12 @@ def process_year_refs(year):
     rows = []
     for row in merged.itertuples():
         try:
-            [rows.append([row.date, row.uid, cat]) for cat in row.categories.split('|')]
+            [rows.append([row.date,cat,row.cnt]) for cat in row.categories.split('|')]
         except Exception as e:
             print row
             raise(e)
 
-    final = pd.DataFrame(rows,columns=['date','ref','category'])
+    final = pd.DataFrame(rows,columns=['date','category','cnt'])
     #print 'merged with categories (unpacked): {}'.format(len(final))
 
     resampled = final.groupby(['date','category']).sum()
