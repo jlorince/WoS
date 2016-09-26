@@ -9,6 +9,37 @@ years = np.arange(1950,2016,1).astype(str)
 parsed_dir = 'P:/Projects/WoS/WoS/parsed/'
 N = mp.cpu_count()
 
+
+def process_year_keywordw(year):
+
+    year_start = time.time()
+
+    metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'])
+
+    kw = pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','n_keywords','keywords'])
+    kw['keywords'] = kw['keywords'].fillna('')
+
+    merged = cats.merge(metadata,on='uid')
+
+    rows = []
+    for row in merged.itertuples():
+        try:
+            [rows.append([row.date, row.uid, k]) for k in row.keywords.split('|')]
+        except Exception as e:
+            print row
+            raise(e)
+
+    merged = pd.DataFrame(rows,columns=['date','uid','keyword'])
+
+    resampled = merged.groupby(['date','keyword']).count()
+
+    td = str(datetime.timedelta(seconds=time.time()-year_start))
+    records = len(resampled)
+    print "{} processed in {} (data length: {})".format(year,td,records)
+
+    return resampled    
+
+
 def process_year_pubs(year):
 
     year_start = time.time()
