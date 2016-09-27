@@ -144,9 +144,8 @@ def go(year,fromzip = True):
     files = ['{}{}/{}.txt.gz'.format(output_dir,kind,year) for kind in filetypes]
     handles = dict(zip(filetypes,[gzip.open(f,'wb') for f in files]))
     for record in records:
-        result = process(record,handles)
-        if result:
-            records_logged += 1
+        process(record,handles)
+        records_logged += 1
         #if records_logged % 10000 == 0:
         #    log_handler("{} --> {} records complete".format(year,records_logged))
     for handle in handles.values():

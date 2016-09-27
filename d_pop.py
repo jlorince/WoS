@@ -10,7 +10,7 @@ parsed_dir = 'P:/Projects/WoS/WoS/parsed/'
 N = mp.cpu_count()
 
 
-def process_year_keywordw(year):
+def process_year_keywords(year):
 
     year_start = time.time()
 
@@ -19,7 +19,7 @@ def process_year_keywordw(year):
     kw = pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','n_keywords','keywords'])
     kw['keywords'] = kw['keywords'].fillna('')
 
-    merged = cats.merge(metadata,on='uid')
+    merged = kw.merge(metadata,on='uid')
 
     rows = []
     for row in merged.itertuples():
@@ -131,10 +131,10 @@ if __name__ == '__main__':
     overall_start = time.time()
 
     pool = mp.Pool(N)
-    final_df = pd.concat(pool.map(process_year_refs,years))
+    final_df = pd.concat(pool.map(process_year_keywords,years))
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     print "Parsing complete  in {} (total data length: {})".format(td, len(final_df))
-    final_df.to_pickle('d_pop_refs.pkl')
+    final_df.to_pickle('d_pop_keywords.pkl')
 
     pool.close()
 
