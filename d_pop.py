@@ -5,7 +5,7 @@ import time
 import datetime
 
 
-years = np.arange(1950,2000,1).astype(str) # debug!
+years = np.arange(1950,2016,1).astype(str)
 parsed_dir = 'P:/Projects/WoS/WoS/parsed/'
 N = mp.cpu_count()
 
