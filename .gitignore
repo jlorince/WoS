@@ -1,2 +1,6 @@
 testdata*
 log*
+parsed*
+*.pkl
+*.pyc
+notebooks/.ipynb_checkpoints*
