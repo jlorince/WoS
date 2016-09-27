@@ -20,8 +20,8 @@ output_dir = 'P:/Projects/WoS/WoS/parsed/'
 do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
-allowed_filetypes = ['metadata','references','authors','subjects','keywords']
-filetypes = ['keywords']
+allowed_filetypes = ['metadata','references','authors','subjects','keywords','abstracts']
+filetypes = ['abstracts']
 
 
 
@@ -69,6 +69,24 @@ def process(record,handles):
     paper = etree.fromstring(record)
 
     uid = paper.find(".//UID").text
+
+    if 'abstracts' in handles:
+
+        abstracts = paper.findall('.//abstract_text')
+        if len(abstracts)>1:
+            print uid,year
+            raise('multi-abstract?')
+        for a in abstracts:
+            if a.attrib['count']>1:
+                print uid,year
+                raise('mult-abstract-text?')
+            all_p = a.findall('.//p')
+            if len(all_p)>1:
+                print uid,year
+                raise('mult-paragraph?')
+            for p in all_p:
+                handles['abstracts'].write(('\t'.join([uid,p.text])+'\n').encode('utf8'))
+
 
     if 'metadata' in handles:
 

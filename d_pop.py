@@ -23,11 +23,12 @@ def process_year_keywords(year):
 
     rows = []
     for row in merged.itertuples():
-        try:
-            [rows.append([row.date, row.uid, k]) for k in row.keywords.split('|')]
-        except Exception as e:
-            print row
-            raise(e)
+        ks = set()
+        for k in row.keywords.split('|'):
+            ks.add(k.lower())
+    
+        [rows.append([row.date, row.uid, k]) for k in ks]
+
 
     merged = pd.DataFrame(rows,columns=['date','uid','keyword'])
 
