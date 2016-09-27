@@ -143,7 +143,7 @@ def process(record,handles,year):
         keywords = paper.findall('.//keyword')
         if len(keywords) > 0:
             keyword_text = [k.text.lower() for k in keywords]
-            handles['keywords'].write("{}\t{}\t{}\n".format(uid,len(keyword_text),'|'.join()).encode('utf8'))
+            handles['keywords'].write("{}\t{}\t{}\n".format(uid,len(keyword_text),'|'.join(keyword_text)).encode('utf8'))
 
 
 
