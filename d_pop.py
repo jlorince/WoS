@@ -5,70 +5,83 @@ import time
 import datetime
 
 
-years = np.arange(1950,2016,1).astype(str)
+years = np.arange(1950,2000,1).astype(str) # debug!
 parsed_dir = 'P:/Projects/WoS/WoS/parsed/'
 N = mp.cpu_count()
 
 
-def process_year_keywords(year):
+def process_year_keywords(year,downsample=True):
 
     year_start = time.time()
 
-    metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'],quoting=3)
-
+    
     kw = pd.read_table('{}keywords/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','n_keywords','keywords'],quoting=3)
     kw['keywords'] = kw['keywords'].fillna('')
 
-    merged = kw.merge(metadata,on='uid')
+    if not downsample:
+        metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'],quoting=3)
+        merged = kw.merge(metadata,on='uid')
 
-    rows = []
-    for row in merged.itertuples():
-        ks = set()
-        for k in row.keywords.split('|'):
-            ks.add(k.lower())
-    
-        [rows.append([row.date, row.uid, k]) for k in ks]
+        rows = []
+        for row in merged.itertuples():
+            ks = set()
+            for k in row.keywords.split('|'):
+                ks.add(k.lower())
+        
+            [rows.append([row.date, row.uid, k]) for k in ks]
+        unstacked = pd.DataFrame(rows,columns=['date','uid','keyword'])
+        result = unstacked.groupby(['date','keyword']).count().reset_index()
+        result.columns = ['date','keyword','freq']
 
+    else:
+        rows = []
+        for row in kw.itertuples():        
+            [rows.append(k) for k in row.keywords.split('|')]
+        result = pd.Series(rows).value_counts().reset_index()
+        result.columns = ['keyword','freq']
+        result['date'] = datetime.datetime(year=int(year),month=1,day=1)
 
-    merged = pd.DataFrame(rows,columns=['date','uid','keyword'])
-
-    resampled = merged.groupby(['date','keyword']).count()
 
     td = str(datetime.timedelta(seconds=time.time()-year_start))
-    records = len(resampled)
+    records = len(result)
     print "{} processed in {} (data length: {})".format(year,td,records)
 
-    return resampled    
+    return result    
 
 
-def process_year_pubs(year):
+def process_year_pubs(year,downsample = True):
 
     year_start = time.time()
-
-    metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'])
 
     cats = pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','heading','subheading','categories'])
     cats['categories'] = cats['categories'].fillna('')
 
-    merged = cats.merge(metadata,on='uid')
+    if not downsample:
+        metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'])
 
-    rows = []
-    for row in merged.itertuples():
-        try:
+        merged = cats.merge(metadata,on='uid')
+
+        rows = []
+        for row in merged.itertuples():
             [rows.append([row.date, row.uid, cat]) for cat in row.categories.split('|')]
-        except Exception as e:
-            print row
-            raise(e)
+        unstacked = pd.DataFrame(rows,columns=['date','uid','category'])
+        result = merged.groupby(['date','category']).count().reset_index()
+        result.columns = ['date','category','freq']
 
-    merged = pd.DataFrame(rows,columns=['date','uid','category'])
+    else:
+        rows = []
+        for row in merged.itertuples():
+            [rows.append(cat) for cat in row.categories.split('|')]
+        result = pd.Series(rows).value_counts().reset_index()
+        result.columns = ['category','freq']
+        result['date'] = datetime.datetime(year=int(year),month=1,day=1)
 
-    resampled = merged.groupby(['date','category']).count()
 
     td = str(datetime.timedelta(seconds=time.time()-year_start))
-    records = len(resampled)
+    records = len(result)
     print "{} processed in {} (data length: {})".format(year,td,records)
 
-    return resampled
+    return result
 
 def process_year_refs(year):
 
