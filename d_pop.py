@@ -16,7 +16,7 @@ def process_year_keywords(year):
 
     metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'])
 
-    kw = pd.read_table('{}subjects/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','n_keywords','keywords'])
+    kw = pd.read_table('{}keywords/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','n_keywords','keywords'])
     kw['keywords'] = kw['keywords'].fillna('')
 
     merged = kw.merge(metadata,on='uid')
@@ -136,6 +136,6 @@ if __name__ == '__main__':
     print "Parsing complete  in {} (total data length: {})".format(td, len(final_df))
     final_df.to_pickle('d_pop_keywords.pkl')
 
-    pool.close()
+    #pool.close()
 
 
