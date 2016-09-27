@@ -77,9 +77,6 @@ def process(record,handles,year):
             print uid,year
             raise('multi-abstract?')
         for a in abstracts:
-            if int(a.attrib['count'])>1:
-                print uid,year
-                raise('mult-abstract-text?')
             all_p = a.findall('.//p')
             handles['abstracts'].write(('\t'.join([uid,'|'.join([p.text for p in all_p])])+'\n').encode('utf8'))
 
