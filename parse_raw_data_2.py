@@ -21,7 +21,7 @@ do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
 allowed_filetypes = ['metadata','references','authors','subjects','keywords','abstracts']
-filetypes = ['abstracts']
+filetypes = ['abstracts','keywords']
 
 
 
@@ -77,7 +77,7 @@ def process(record,handles,year):
             print uid,year
             raise('multi-abstract?')
         for a in abstracts:
-            if a.attrib['count']>1:
+            if int(a.attrib['count'])>1:
                 print uid,year
                 raise('mult-abstract-text?')
             all_p = a.findall('.//p')
@@ -142,7 +142,8 @@ def process(record,handles,year):
     if 'keywords' in handles:
         keywords = paper.findall('.//keyword')
         if len(keywords) > 0:
-            handles['keywords'].write("{}\t{}\t{}\n".format(uid,len(keywords),'|'.join([k.text  for k in keywords])).encode('utf8'))
+            keyword_text = [k.text.lower() for k in keywords]
+            handles['keywords'].write("{}\t{}\t{}\n".format(uid,len(keyword_text),'|'.join()).encode('utf8'))
 
 
 
