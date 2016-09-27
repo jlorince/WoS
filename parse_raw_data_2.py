@@ -81,11 +81,7 @@ def process(record,handles,year):
                 print uid,year
                 raise('mult-abstract-text?')
             all_p = a.findall('.//p')
-            if len(all_p)>1:
-                print uid,year
-                raise('mult-paragraph?')
-            for p in all_p:
-                handles['abstracts'].write(('\t'.join([uid,p.text])+'\n').encode('utf8'))
+            handles['abstracts'].write(('\t'.join([uid,'|'.join([p.text for p in all_p])])+'\n').encode('utf8'))
 
 
     if 'metadata' in handles:
