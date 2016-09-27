@@ -64,7 +64,7 @@ def find_text(query):
             return query.text
     return ''
 
-def process(record,handles):
+def process(record,handles,year):
 
     paper = etree.fromstring(record)
 
@@ -162,7 +162,7 @@ def go(year,fromzip = True):
     files = ['{}{}/{}.txt.gz'.format(output_dir,kind,year) for kind in filetypes]
     handles = dict(zip(filetypes,[gzip.open(f,'wb') for f in files]))
     for record in records:
-        process(record,handles)
+        process(record,handles,year)
         records_logged += 1
         #if records_logged % 10000 == 0:
         #    log_handler("{} --> {} records complete".format(year,records_logged))
