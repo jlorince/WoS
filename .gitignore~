@@ -4,3 +4,4 @@ parsed*
 *.pkl
 *.pyc
 notebooks/.ipynb_checkpoints*
+~*

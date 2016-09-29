@@ -21,7 +21,9 @@ do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
 allowed_filetypes = ['metadata','references','authors','subjects','keywords','abstracts']
-filetypes = ['abstracts','keywords']
+filetypes = ['metadata']
+
+single_file = None # if given as string, generate a single file with all desired columns
 
 
 
@@ -66,20 +68,11 @@ def find_text(query):
 
 def process(record,handles,year):
 
+    overall_result = ''
+
     paper = etree.fromstring(record)
 
     uid = paper.find(".//UID").text
-
-    if 'abstracts' in handles:
-
-        abstracts = paper.findall('.//abstract_text')
-        if len(abstracts)>1:
-            print uid,year
-            raise('multi-abstract?')
-        for a in abstracts:
-            all_p = a.findall('.//p')
-            handles['abstracts'].write(('\t'.join([uid,'|'.join([p.text for p in all_p])])+'\n').encode('utf8'))
-
 
     if 'metadata' in handles:
 
@@ -99,9 +92,24 @@ def process(record,handles,year):
 
         #### NEED CONFERENCE / JOURNAL / PUBLISHER INFO
 
-
-        handles['metadata'].write(('\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])+'\n').encode('utf8'))
+        if single_file:
+            overall_result += ('\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])).replace("'","").replace('"','').encode('utf8')
+        else:
+            handles['metadata'].write(('\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])+'\n').replace("'","").replace('"','').encode('utf8'))
     
+
+    if 'abstracts' in handles:
+
+        abstracts = paper.findall('.//abstract_text')
+        if len(abstracts)>1:
+            print uid,year
+            raise('multi-abstract?')
+        for a in abstracts:
+            all_p = a.findall('.//p')
+            handles['abstracts'].write(('\t'.join([uid,'|'.join([p.text for p in all_p])])+'\n').encode('utf8'))
+
+
+
 
     if 'authors' in handles:
 
@@ -153,8 +161,12 @@ def go(year,fromzip = True):
         filelist = [f for f in glob.glob(basedir+'*') if f[f.rfind('/'):][4:8]==year]
         records = reader(filelist)
     records_logged = 0
-    files = ['{}{}/{}.txt.gz'.format(output_dir,kind,year) for kind in filetypes]
-    handles = dict(zip(filetypes,[gzip.open(f,'wb') for f in files]))
+    if single_file is not None:
+        file = '{}{}.txt.gz'.format(output_dir,single_file)
+        handles = gzip.open(file,'wb')
+    else:
+        files = ['{}{}/{}.txt.gz'.format(output_dir,kind,year) for kind in filetypes]
+        handles = dict(zip(filetypes,[gzip.open(f,'wb') for f in files]))
     for record in records:
         process(record,handles,year)
         records_logged += 1

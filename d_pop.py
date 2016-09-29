@@ -34,6 +34,7 @@ def process_year_keywords(year,downsample=True):
         result.columns = ['date','keyword','freq']
 
     else:
+        # handle in parens keywords
         rows = []
         for row in kw.itertuples():        
             [rows.append(k) for k in row.keywords.split('|')]
