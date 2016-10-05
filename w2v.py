@@ -13,8 +13,8 @@ else:
 
 
 #abs_dir = os.path.expanduser('~')+'/parsed/abstracts/'
-#abs_dir = 'S:/UsersData/jjl2228/WoS/parsed/abstracts/'
-abs_dir = os.path.expanduser('~')+'/'
+abs_dir = 'S:/UsersData/jjl2228/WoS/parsed/abstracts/'
+#abs_dir = os.path.expanduser('~')+'/'
 
 def normalize_text(text):
     norm_text = text.lower()
@@ -62,16 +62,15 @@ def preprocess_docs(in_dir,out_dir):
 
 
 
-documents = TaggedLineDocument(abs_dir+'docs{}.txt.gz'.format(test))
-model = Doc2Vec(documents, size=200, window=5, min_count=5,workers=16)
+documents = [doc for doc in TaggedLineDocument(abs_dir+'docs{}.txt.gz'.format(test))]
+model = Doc2Vec(documents, size=200, window=5, min_count=5,workers=24)
 
-features = model.docvecs.doctag_syn0.copy()
 
-np.savetxt('features{}.tsv'.format(test),features,delimiter='\t')
+np.save(abs_dir+'features-w2v-200.npy',model.docvecs.doctag_syn0)
 
 from sklearn.preprocessing import Normalizer
 nrm = Normalizer('l2')
-normed = nrm.fit_transform(features)
+normed = nrm.fit_transform(model.docvecs.doctag_syn0)
 
-np.savetxt('features_normed{}.tsv'.format(test),normed,delimiter='\t')
+np.save(abs_dir+'features_normed-w2v-200.npy',model.docvecs.doctag_syn0)
 

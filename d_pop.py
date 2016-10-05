@@ -3,6 +3,8 @@ import multiprocessing as mp
 import numpy as np
 import time
 import datetime
+from nltk.stem.wordnet import WordNetLemmatizer
+lem = WordNetLemmatizer()
 
 
 years = np.arange(1950,2016,1).astype(str)
@@ -26,7 +28,10 @@ def process_year_keywords(year,downsample=True):
         for row in merged.itertuples():
             ks = set()
             for k in row.keywords.split('|'):
-                ks.add(k.lower())
+                #for char in ['.', '"', ',', '(', ')', '!', '?', ';', ':','-']:
+                    #k = k.replace(char, ' ' + char + ' ')
+                k = ' '.join([lem.lemmatize(w) for w in re.sub('[^0-9a-zA-Z]+', ' ', k.lower()).split()])
+                ks.add(k)
         
             [rows.append([row.date, row.uid, k]) for k in ks]
         unstacked = pd.DataFrame(rows,columns=['date','uid','keyword'])
@@ -149,7 +154,7 @@ if __name__ == '__main__':
     final_df = pd.concat(pool.map(process_year_keywords,years))
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     print "Parsing complete  in {} (total data length: {})".format(td, len(final_df))
-    final_df.to_pickle('d_pop_keywords.pkl')
+    final_df.to_pickle('d_pop_keywords_lem.pkl')
 
     #pool.close()
 
