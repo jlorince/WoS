@@ -41,7 +41,7 @@ def process_year_keywords(year,downsample=True):
     else:
         # handle in parens keywords
         rows = []
-        for row in merged.itertuples():
+        for row in kw.itertuples():
             ks = set()
             for k in row.keywords.split('|'):
                 #for char in ['.', '"', ',', '(', ')', '!', '?', ';', ':','-']:
