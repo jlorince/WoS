@@ -3,6 +3,7 @@ import multiprocessing as mp
 import numpy as np
 import time
 import datetime
+import re
 from nltk.stem.wordnet import WordNetLemmatizer
 lem = WordNetLemmatizer()
 
