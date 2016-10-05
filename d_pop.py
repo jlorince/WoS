@@ -41,8 +41,14 @@ def process_year_keywords(year,downsample=True):
     else:
         # handle in parens keywords
         rows = []
-        for row in kw.itertuples():        
-            [rows.append(k) for k in row.keywords.split('|')]
+        for row in merged.itertuples():
+            ks = set()
+            for k in row.keywords.split('|'):
+                #for char in ['.', '"', ',', '(', ')', '!', '?', ';', ':','-']:
+                    #k = k.replace(char, ' ' + char + ' ')
+                k = ' '.join([lem.lemmatize(w) for w in re.sub('[^0-9a-zA-Z]+', ' ', k.lower()).split()])
+                ks.add(k)
+            [rows.append([row.date, row.uid, k]) for k in ks]
         result = pd.Series(rows).value_counts().reset_index()
         result.columns = ['keyword','freq']
         result['date'] = datetime.datetime(year=int(year),month=1,day=1)
