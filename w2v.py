@@ -72,5 +72,5 @@ from sklearn.preprocessing import Normalizer
 nrm = Normalizer('l2')
 normed = nrm.fit_transform(model.docvecs.doctag_syn0)
 
-np.save(abs_dir+'features_normed-w2v-200.npy',model.docvecs.doctag_syn0)
+np.save(abs_dir+'features_normed-w2v-200.npy',normed)
 
