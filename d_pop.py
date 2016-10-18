@@ -173,7 +173,7 @@ if __name__ == '__main__':
     final_df = pd.concat(pool.map(process_year_keywords,years))
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     print "Parsing complete  in {} (total data length: {})".format(td, len(final_df))
-    final_df.to_pickle('d_pop_keywords_lem.pkl')
+    final_df.to_pickle('d_pop_keywords_lem_monthly.pkl')
 
     #pool.close()
 
