@@ -34,35 +34,30 @@ def process_year_keywords(year,downsample='monthly'):
     kw = pd.read_table('{}keywords/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','n_keywords','keywords'],quoting=3)
     kw['keywords'] = kw['keywords'].fillna('')
 
-    if not downsample:
-        metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'],quoting=3)
-        merged = kw.merge(metadata,on='uid')
-        rows = []
-        for row in merged.itertuples():
-            # ks = set()
-            # for k in row.keywords.split('|'):
-            #     #for char in ['.', '"', ',', '(', ')', '!', '?', ';', ':','-']:
-            #         #k = k.replace(char, ' ' + char + ' ')
-            #     k = ' '.join([lem.lemmatize(w) for w in re.sub('[^0-9a-zA-Z]+', ' ', k.lower()).split()])
-            #     ks.add(k)
+    metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'],quoting=3)
+    merged = kw.merge(metadata,on='uid')
+    rows = []
+    for row in merged.itertuples():
+        # ks = set()
+        # for k in row.keywords.split('|'):
+        #     #for char in ['.', '"', ',', '(', ')', '!', '?', ';', ':','-']:
+        #         #k = k.replace(char, ' ' + char + ' ')
+        #     k = ' '.join([lem.lemmatize(w) for w in re.sub('[^0-9a-zA-Z]+', ' ', k.lower()).split()])
+        #     ks.add(k)
 
-            ks = keyword_parser(row.keywords)
-            if downsample is None:
-                [rows.append([row.date, row.uid, k]) for k in ks]
-            elif downsample == 'monthly':
-                [rows.append([datetime.datetime(year=row.date.year,month=row.date.month,day=1), row.uid, k]) for k in ks]
-            elif downsample == 'yearly':
-                [rows.append([datetime.datetime(year=row.date.year,month=1,day=1), row.uid, k]) for k in ks]
+        ks = keyword_parser(row.keywords)
+        if downsample is None:
+            [rows.append([row.date, row.uid, k]) for k in ks]
+        elif downsample == 'monthly':
+            [rows.append([datetime.datetime(year=row.date.year,month=row.date.month,day=1), row.uid, k]) for k in ks]
+        elif downsample == 'yearly':
+            [rows.append([datetime.datetime(year=row.date.year,month=1,day=1), row.uid, k]) for k in ks]
 
-        unstacked = pd.DataFrame(rows,columns=['date','uid','keyword'])
-        result = unstacked.groupby(['date','keyword']).count().reset_index()
-        result.columns = ['date','keyword','freq']
+    unstacked = pd.DataFrame(rows,columns=['date','uid','keyword'])
+    result = unstacked.groupby(['date','keyword']).count().reset_index()
+    result.columns = ['date','keyword','freq']
 
-    else:
-        pass
-        #result = pd.Series(rows).value_counts().reset_index()
-        #result.columns = ['keyword','freq']
-        #result['date'] = datetime.datetime(year=int(year),month=1,day=1)
+
 
 
     td = str(datetime.timedelta(seconds=time.time()-year_start))
