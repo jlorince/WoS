@@ -21,7 +21,7 @@ do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
 allowed_filetypes = ['metadata','references','authors','subjects','keywords','abstracts']
-filetypes = ['metadata']
+filetypes = ['abstracts','keywords']
 
 single_file = None # if given as string, generate a single file with all desired columns
 

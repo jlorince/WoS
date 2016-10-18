@@ -12,8 +12,19 @@ years = np.arange(1950,2016,1).astype(str)
 parsed_dir = 'P:/Projects/WoS/WoS/parsed/'
 N = mp.cpu_count()
 
+def keyword_parser(kw):
+    result = []
+    for k in kw.split('|'):
+        current = [lem.lemmatize(w) for w in k.replace('-',' ').replace('/',' ').split()]
+        last = current[-1]
+        if last.startswith('(') and last.endswith(')'):
+            result+=['.'.join(current[:-1]),last.replace('(','').replace(')','')]
+        else:
+            result.append('.'.join(current))
+    return result
 
-def process_year_keywords(year,downsample=True):
+
+def process_year_keywords(year,downsample=False):
 
     year_start = time.time()
 
@@ -27,32 +38,25 @@ def process_year_keywords(year,downsample=True):
 
         rows = []
         for row in merged.itertuples():
-            ks = set()
-            for k in row.keywords.split('|'):
-                #for char in ['.', '"', ',', '(', ')', '!', '?', ';', ':','-']:
-                    #k = k.replace(char, ' ' + char + ' ')
-                k = ' '.join([lem.lemmatize(w) for w in re.sub('[^0-9a-zA-Z]+', ' ', k.lower()).split()])
-                ks.add(k)
-        
+            # ks = set()
+            # for k in row.keywords.split('|'):
+            #     #for char in ['.', '"', ',', '(', ')', '!', '?', ';', ':','-']:
+            #         #k = k.replace(char, ' ' + char + ' ')
+            #     k = ' '.join([lem.lemmatize(w) for w in re.sub('[^0-9a-zA-Z]+', ' ', k.lower()).split()])
+            #     ks.add(k)
+
+            ks = keyword_parser(row.keywords)
             [rows.append([row.date, row.uid, k]) for k in ks]
+            
         unstacked = pd.DataFrame(rows,columns=['date','uid','keyword'])
         result = unstacked.groupby(['date','keyword']).count().reset_index()
         result.columns = ['date','keyword','freq']
 
     else:
-        # handle in parens keywords
-        rows = []
-        for row in kw.itertuples():
-            ks = set()
-            for k in row.keywords.split('|'):
-                #for char in ['.', '"', ',', '(', ')', '!', '?', ';', ':','-']:
-                    #k = k.replace(char, ' ' + char + ' ')
-                k = ' '.join([lem.lemmatize(w) for w in re.sub('[^0-9a-zA-Z]+', ' ', k.lower()).split()])
-                ks.add(k)
-            [rows.append([row.date, row.uid, k]) for k in ks]
-        result = pd.Series(rows).value_counts().reset_index()
-        result.columns = ['keyword','freq']
-        result['date'] = datetime.datetime(year=int(year),month=1,day=1)
+        pass
+        #result = pd.Series(rows).value_counts().reset_index()
+        #result.columns = ['keyword','freq']
+        #result['date'] = datetime.datetime(year=int(year),month=1,day=1)
 
 
     td = str(datetime.timedelta(seconds=time.time()-year_start))
