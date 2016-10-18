@@ -26,7 +26,7 @@ def keyword_parser(kw):
     return result
 
 
-def process_year_keywords(year,downsample=False):
+def process_year_keywords(year,downsample='monthly'):
 
     year_start = time.time()
 
@@ -47,7 +47,12 @@ def process_year_keywords(year,downsample=False):
             #     ks.add(k)
 
             ks = keyword_parser(row.keywords)
-            [rows.append([row.date, row.uid, k]) for k in ks]
+            if downsample is None:
+                [rows.append([row.date, row.uid, k]) for k in ks]
+            elif downsample == 'monthly':
+                [rows.append([datetime.datetime(year=row.date.year,month=row.date.month,day=1), row.uid, k]) for k in ks]
+            elif downsample == 'yearly':
+                [rows.append([datetime.datetime(year=row.date.year,month=1,day=1), row.uid, k]) for k in ks]
 
         unstacked = pd.DataFrame(rows,columns=['date','uid','keyword'])
         result = unstacked.groupby(['date','keyword']).count().reset_index()
