@@ -35,7 +35,6 @@ def process_year_keywords(year,downsample=False):
     if not downsample:
         metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'],quoting=3)
         merged = kw.merge(metadata,on='uid')
-
         rows = []
         for row in merged.itertuples():
             # ks = set()
@@ -47,7 +46,7 @@ def process_year_keywords(year,downsample=False):
 
             ks = keyword_parser(row.keywords)
             [rows.append([row.date, row.uid, k]) for k in ks]
-            
+
         unstacked = pd.DataFrame(rows,columns=['date','uid','keyword'])
         result = unstacked.groupby(['date','keyword']).count().reset_index()
         result.columns = ['date','keyword','freq']
@@ -158,11 +157,13 @@ def process_year_refs(year):
     return resampled
 
 if __name__ == '__main__':
+    import math
 
     overall_start = time.time()
 
     pool = mp.Pool(N)
-    final_df = pd.concat(pool.map(process_year_keywords,years))
+    chunksize = chunksize = int(math.ceil(len(files) / float(N)))
+    final_df = pd.concat(pool.map(process_year_keywords,years,chunksize=chunksize))
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     print "Parsing complete  in {} (total data length: {})".format(td, len(final_df))
     final_df.to_pickle('d_pop_keywords_lem.pkl')
