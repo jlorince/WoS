@@ -15,7 +15,7 @@ N = mp.cpu_count()
 def keyword_parser(kw):
     result = []
     for k in kw.split('|'):
-        current = [lem.lemmatize(w) for w in k.replace('-',' ').replace('/',' ').split()]
+        current = [lem.lemmatize(w) for w in k.replace('-',' ').replace('/',' ').replace('"','').replace("'","").split()]
         if len(current)==0:
             continue
         last = current[-1]
