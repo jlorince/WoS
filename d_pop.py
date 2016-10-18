@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
     pool = mp.Pool(N)
     #chunksize = int(math.ceil(len(years) / float(N)))
-    final_df = pd.concat(pool.map(process_year_keywords,years)
+    final_df = pd.concat(pool.map(process_year_keywords,years))
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     print "Parsing complete  in {} (total data length: {})".format(td, len(final_df))
     final_df.to_pickle('d_pop_keywords_lem.pkl')
