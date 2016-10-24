@@ -46,6 +46,7 @@ def calc_diversities(input_tuple):
 if __name__=='__main__':
 
     import gzip
+    import datetime
 
     d = {}
     print 'building array dict..'
