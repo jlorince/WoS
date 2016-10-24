@@ -39,8 +39,8 @@ def initProcess(share):
 
 def calc_diversities(input_tuple):
     papers,refs = input_tuples
-    paper_diversity = pdist(np.array([empty_module.d[i] for i in papers])).mean()
-    reference_diversity = pdist(np.array([empty_module.d[i] for i in refs])).mean()
+    paper_diversity = pdist(np.vstack([empty_module.d[i] for i in papers])).mean()
+    reference_diversity = pdist(np.vstack([empty_module.d[i] for i in refs])).mean()
     return paper_diversity,reference_diversity
 
 if __name__=='__main__':
@@ -61,6 +61,7 @@ if __name__=='__main__':
 
     for year in xrange(1991,2016):
         print 'Beginning processing for {}:'.format(year)
+        year = start = time.time()
 
         print 'Reading dataframes...'
         start = time.time()
@@ -103,6 +104,8 @@ if __name__=='__main__':
             for kw,(paper,ref) in zip(grp['idx'],result):
                 out.write('\t'.join(map(str,[kw,paper,ref]))+'\n')
         print '...done in {}'.format(str(datetime.timedelta(seconds=time.time()-start)))
+
+        print '----{} complete in {}----'.format(str(datetime.timedelta(seconds=time.time()-start)))        
 
 
 
