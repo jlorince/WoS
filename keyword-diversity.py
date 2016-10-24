@@ -3,7 +3,6 @@ import pandas as pd
 import multiprocessing as mp
 from nltk.stem.wordnet import WordNetLemmatizer
 import empty_module 
-import time
 from scipy.spatial.distance import pdist 
 
 lem = WordNetLemmatizer()
@@ -46,10 +45,11 @@ def calc_diversities(input_tuple):
 if __name__=='__main__':
 
     import gzip
-    import datetime
+    import time,datetime
 
     d = {}
     print 'building array dict..'
+    start = time.time()     
 
     features = np.load('P:/Projects/WoS/WoS/parsed/abstracts/features-w2v-200.npy')
     print '(array loaded in in {})'.format(str(datetime.timedelta(seconds=time.time()-start)))
@@ -63,7 +63,7 @@ if __name__=='__main__':
 
     for year in xrange(1991,2016):
         print 'Beginning processing for {}:'.format(year)
-        year = start = time.time()
+        start = time.time()
 
         print 'Reading dataframes...'
         start = time.time()
