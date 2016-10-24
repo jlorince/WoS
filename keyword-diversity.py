@@ -4,7 +4,7 @@ import multiprocessing as mp
 from nltk.stem.wordnet import WordNetLemmatizer
 import empty_module 
 import time
-from scipy.spatial import pdist 
+from scipy.spatial.distance import pdist 
 
 lem = WordNetLemmatizer()
 
