@@ -51,11 +51,12 @@ if __name__=='__main__':
     print 'building array dict..'
 
     features = np.load('P:/Projects/WoS/WoS/parsed/abstracts/features-w2v-200.npy')
+    print '(array loaded in in {})'.format(str(datetime.timedelta(seconds=time.time()-start)))
     uids = {line.strip():i for i,line in enumerate(gzip.open('P:/Projects/WoS/WoS/parsed/abstracts/uid_indices.txt.gz'))} 
 
     for i in xrange(len(features)):
         d[i] = mp.Array('d',features[i],lock=False)
-    print '...done!'
+    print '...done in {}'.format(str(datetime.timedelta(seconds=time.time()-start)))
 
     pool = mp.Pool(mp.cpu_count(),initializer=initProcess,initargs=(d,))
 
@@ -99,9 +100,9 @@ if __name__=='__main__':
 
         print 'Beginning parallel diversity computations...'
         start = time.time()
-        result = pool.map(calc_diversities,zip(grp['idx'],grp['refs']))
+        #result = pool.map(calc_diversities,zip(grp['idx'],grp['refs']))
         with gzip.open('P:/Projects/WoS/WoS/data/keyword-diversity/{}.txt.gz','wb') as out:
-            for kw,(paper,ref) in zip(grp['idx'],result):
+            for kw,(paper,ref) in zip(grp['idx'],pool.imap_unordered(calc_diversities,zip(grp['idx'],grp['refs']))):
                 out.write('\t'.join(map(str,[kw,paper,ref]))+'\n')
         print '...done in {}'.format(str(datetime.timedelta(seconds=time.time()-start)))
 
