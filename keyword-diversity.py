@@ -52,11 +52,14 @@ if __name__=='__main__':
     start = time.time()     
 
     features = np.load('P:/Projects/WoS/WoS/parsed/abstracts/features-w2v-200.npy')
-    print '(array loaded in in {})'.format(str(datetime.timedelta(seconds=time.time()-start)))
+    print '(array loaded in {})'.format(str(datetime.timedelta(seconds=time.time()-start)))
+    inner_start = time.time()
     uids = {line.strip():i for i,line in enumerate(gzip.open('P:/Projects/WoS/WoS/parsed/abstracts/uid_indices.txt.gz'))} 
+    print '(uid dict generated in {})'.format(str(datetime.timedelta(seconds=time.time()-inner_start)))
 
-    for i in xrange(len(features)):
-        d[i] = mp.Array('d',features[i],lock=False)
+    #for i in xrange(len(features)):
+    #    d[i] = mp.Array('d',features[i],lock=False)
+    d = {i:mp.Array('d',row ,lock=False) for i,row in enumerate(features)}
     print '...done in {}'.format(str(datetime.timedelta(seconds=time.time()-start)))
 
     pool = mp.Pool(mp.cpu_count(),initializer=initProcess,initargs=(d,))
