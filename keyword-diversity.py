@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import 
 import multiprocessing as mp
 from nltk.stem.wordnet import WordNetLemmatizer
 import empty_module 
