@@ -4,7 +4,7 @@ import multiprocessing as mp
 from nltk.stem.wordnet import WordNetLemmatizer
 from scipy.spatial.distance import pdist
 import gzip
-import time,datetime
+import time,datetime,math,csv
 
 
 def keyword_parser(kw):
@@ -23,7 +23,7 @@ def keyword_parser(kw):
 def process_year(year):
         start = time.time()
 
-        kw = pd.read_table('P:/Projects/WoS/WoS/parsed/keywords/{}.txt.gz'.format(year),names=['uid','n_kw','keywords'],usecols=['uid','keywords'])
+        kw = pd.read_table('P:/Projects/WoS/WoS/parsed/keywords/{}.txt.gz'.format(year),names=['uid','n_kw','keywords'],usecols=['uid','keywords'],quoting=csv.QUOTE_NONE)
         kw['keywords'] = kw['keywords'].apply(keyword_parser)
 
         n=0
