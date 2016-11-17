@@ -4,6 +4,7 @@ import multiprocessing as mp
 from nltk.stem.wordnet import WordNetLemmatizer
 from scipy.spatial.distance import pdist
 import gzip
+import time,datetime
 
 
 def keyword_parser(kw):
