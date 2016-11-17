@@ -3,14 +3,6 @@ import gzip,os,glob
 import multiprocessing as mp
 import numpy as np
 
-debug = False
-
-if debug:
-    test= "_test"
-else:
-    test = ""
-
-
 
 #abs_dir = os.path.expanduser('~')+'/parsed/abstracts/'
 abs_dir = 'S:/UsersData/jjl2228/WoS/parsed/abstracts/'
@@ -32,23 +24,13 @@ def normalize_text(text):
 def preprocess_docs(in_dir,out_dir):
     with gzip.open(in_dir+'uid_indices{}.txt.gz'.format(test),'wb') as idx_out, gzip.open(out_dir+'docs{}.txt.gz'.format(test),'wb') as docs:
         overall_total = 0
-        if debug:
-            files = glob.glob('{}2015.txt.gz'.format(in_dir))
-        else:
-            files = glob.glob('{}/*.txt.gz'.format(in_dir))
+        files = glob.glob('{}/*.txt.gz'.format(in_dir))
         for f in files:
             if 'docs' or 'uid_indices' in f:
                 continue
             print "Starting file {}".format(f)
             for i,line in enumerate(gzip.open(f)):
-                # if debug:
-                #     if i==100000:
-                #         break
-                try:
-                    uid,text = line.split('\t')
-                except:
-                    print line 
-                    1/0
+                uid,text = line.split('\t')
                 if text.strip() == '':
                     continue
                 docs.write(normalize_text(text)+'\n')
@@ -58,9 +40,7 @@ def preprocess_docs(in_dir,out_dir):
             print "{} complete: {} total documents ({} overall)".format(f,total,overall_total)
 
 
-#preprocess_docs(abs_dir,abs_dir)
-
-
+preprocess_docs(abs_dir,abs_dir)
 
 documents = [doc for doc in TaggedLineDocument(abs_dir+'docs{}.txt.gz'.format(test))]
 model = Doc2Vec(documents, size=200, window=5, min_count=5,workers=24)

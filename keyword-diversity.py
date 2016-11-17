@@ -47,7 +47,6 @@ if __name__=='__main__':
     import gzip
     import time,datetime
 
-    d = {}
     print 'building array dict..'
     start = time.time()     
 
@@ -84,7 +83,7 @@ if __name__=='__main__':
         kw['keywords'] = kw['keywords'].apply(keyword_parser)
         #metadata['date'] = metadata['date'].apply(lambda x: x.year)
         combined = references.dropna().merge(kw,on='uid')#.merge(metadata,on='uid')
-        combind['idx'] = combined['uid'].apply(lambda x: uids.get(x))
+        combined['idx'] = combined['uid'].apply(lambda x: uids.get(x))
         combined = combined.dropna()
         combined['idx'] = combined['idx'].astype(int)
         print '...done in {}'.format(str(datetime.timedelta(seconds=time.time()-start)))
