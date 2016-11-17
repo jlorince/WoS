@@ -4,7 +4,9 @@ import multiprocessing as mp
 from nltk.stem.wordnet import WordNetLemmatizer
 from scipy.spatial.distance import pdist
 import gzip
-import time,datetime,math,csv
+import time,datetime,csv
+
+lem = WordNetLemmatizer()
 
 
 def keyword_parser(kw):
@@ -27,7 +29,7 @@ def process_year(year):
         kw['keywords'] = kw['keywords'].apply(keyword_parser)
 
         n=0
-        with gzip.open('S:/UsersData_NoExpiration/jjl2228/keywords/pubs_by_year/{}.txt.gz','wb') as out:
+        with gzip.open('S:/UsersData_NoExpiration/jjl2228/keywords/pubs_by_year/{}.txt.gz'.format(year),'wb') as out:
             for row in kw.itertuples():
                 for k in row.keywords:
                     out.write("{}\t{}\n".format(k,row.uid))
