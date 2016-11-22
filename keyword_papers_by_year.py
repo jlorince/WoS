@@ -5,6 +5,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from scipy.spatial.distance import pdist
 import gzip
 import time,datetime,csv
+import string
 
 lem = WordNetLemmatizer()
 
@@ -21,6 +22,20 @@ def keyword_parser(kw):
         else:
             result.append('.'.join(current))
     return result
+
+
+def keyword_parser2(kw):
+    result = []
+    for k in kw.split('|'):
+        current = [lem.lemmatize(w) for w in k.translate(None,string.punctuation).split()]
+        if len(current)==0:
+            continue
+        last = current[-1]
+        if last.startswith('(') and last.endswith(')'):
+            result+=['.'.join(current[:-1]),last.replace('(','').replace(')','')]
+        else:
+            result.append('.'.join(current))
+    return result    
 
 def process_year(year):
         start = time.time()
