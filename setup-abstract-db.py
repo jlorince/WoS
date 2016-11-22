@@ -7,7 +7,7 @@ r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 abstract_dir = '/backup/home/jared/abstracts/'
 
-def process_year():
+def process_year(year):
     start = time.time()
     wordset=set()
     for i,line in enumerate(gzip.open('{}raw/{}.txt.gz'.format(abstract_dir,year)),1):
