@@ -25,7 +25,7 @@ if __name__=='__main__':
     
     start = time.time()
     pool = mp.Pool(mp.cpu_count())
-    result = pool.map(process_year,xrange(1991,2016))
+    result = pool.map(process_year,range(1991,2016))
     print '----all years complete in {} ----'.format(str(datetime.timedelta(seconds=time.time()-start)))
 
     start=time.time()
