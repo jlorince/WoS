@@ -16,7 +16,7 @@ def process_year(year):
                 uid,rawtext = line.strip().split('\t',1)
             except ValueError:
                 continue
-            rawtext = rawtext.translate(None,string.punctuation).split()
+            rawtext = rawtext.translate(None,string.punctuation).decode('utf8').split()
             if len(rawtext)>0:
                 cleaned = [stemmer.stem(w) for w in rawtext]
                 r.set(uid,' '.join(cleaned))
