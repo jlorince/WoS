@@ -11,10 +11,12 @@ def process_year(year):
     start = time.time()
     wordset=set()
     for i,line in enumerate(gzip.open('{}raw/{}.txt.gz'.format(abstract_dir,year)),1):
-        uid,rawtext = line.strip().split('\t',1)    
-        cleaned = [stemmer.stem(w) for w in rawtext.translate(None,string.punctuation).split()]
-        r.set(uid,' '.join(cleaned))
-        wordset = wordset.union(set(cleaned))
+        uid,rawtext = line.strip().split('\t',1)
+        rawtext = rawtext.translate(None,string.punctuation).split()
+        if len(rawtext)>0:
+            cleaned = [stemmer.stem(w) for w in rawtext]
+            r.set(uid,' '.join(cleaned))
+            wordset = wordset.union(set(cleaned))
     print '----{} complete in {} ({} records)----'.format(year,str(datetime.timedelta(seconds=time.time()-start)),i)
     return wordset
 
@@ -39,7 +41,7 @@ if __name__=='__main__':
         fout.write('\n'.join(final_set))
     print 'done in {} ----'.format(str(datetime.timedelta(seconds=time.time()-start)))
 
-    print '----processing complete in {} ----'.format(str(datetime.timedelta(seconds=time.time()-start)))
+    print '----processing complete in {} ----'.format(str(datetime.timedelta(seconds=time.time()-overall_start)))
     
     
     
