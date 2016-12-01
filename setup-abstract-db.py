@@ -8,22 +8,21 @@ r = redis.StrictRedis(host='localhost', port=6379, db=0)
 abstract_dir = '/backup/home/jared/abstracts/'
 
 def process_year(year):
+    print '----starting processing for {}----'.format(year)
     start = time.time()
     wordset=set()
-    try:
-        for i,line in enumerate(gzip.open('{}raw/{}.txt.gz'.format(abstract_dir,year)),1):
-            try:
-                uid,rawtext = line.strip().split('\t',1)
-            except ValueError:
-                continue
-            rawtext = rawtext.translate(None,string.punctuation).decode('utf8').split()
-            if len(rawtext)>0:
-                cleaned = [stemmer.stem(w) for w in rawtext]
-                r.set(uid,' '.join(cleaned))
-                wordset = wordset.union(set(cleaned))
-    except UnicodeDecodeError as e:
-        print line
-        raise(e)
+
+    for i,line in enumerate(gzip.open('{}raw/{}.txt.gz'.format(abstract_dir,year)),1):
+        try:
+            uid,rawtext = line.strip().split('\t',1)
+        except ValueError:
+            continue
+        rawtext = rawtext.translate(None,string.punctuation).decode('utf8').split()
+        if len(rawtext)>0:
+            cleaned = [stemmer.stem(w) for w in rawtext]
+            r.set(uid,' '.join(cleaned))
+            wordset = wordset.union(set(cleaned))
+
     print '----{} complete in {} ({} records)----'.format(year,str(datetime.timedelta(seconds=time.time()-start)),i)
     return wordset
 
