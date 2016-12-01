@@ -76,8 +76,8 @@ def main(n_procs):
     pool = mp.Pool(n_procs)
     signal.signal(signal.SIGINT, original_sigint_handler)
     try:
-        result = pool.map_async(process,xrange(1991,2016))
-        res.get(9999999999999999)
+        res = pool.map_async(process,xrange(1991,2016))
+        result = res.get(9999999999999999)
     except KeyboardInterrupt:
         print("Caught KeyboardInterrupt, terminating workers")
         pool.terminate()

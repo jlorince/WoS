@@ -6,3 +6,4 @@ parsed*
 *.pyc
 notebooks/.ipynb_checkpoints*
 ~*
+*._
