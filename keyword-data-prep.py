@@ -34,17 +34,14 @@ def parse_abs(rawtext_arr):
     result = []
     for i,rawtext in enumerate(rawtext_arr):
         if pd.isnull(rawtext):
-            continue
+            result.append('')
         else:
             rawtext = rawtext.translate(None,string.punctuation).decode('utf8').split()
             if len(rawtext)>0:
                 cleaned = [stemmer.stem(w) for w in rawtext]
                 result.append(' '.join(cleaned))
-    if len(result)==0:
-        return set(),''
-    else:
-        wordset = set(' '.join(result).split())
-        return wordset,result
+    wordset = set(' '.join(result).split())
+    return wordset,result
 
 
 def process(year):
