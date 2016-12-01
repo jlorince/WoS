@@ -41,9 +41,10 @@ def parse_abs(rawtext_arr):
                 cleaned = [stemmer.stem(w) for w in rawtext]
                 result.append(' '.join(cleaned))
     if len(result)==0:
-        result = ''
-    wordset = set(' '.join(result).split())
-    return result,wordset
+        return set(),''
+    else:
+        wordset = set(' '.join(result).split())
+        return wordset,result
 
 
 def process(year):
@@ -100,6 +101,9 @@ if __name__=='__main__':
         with timed('final wordset unioning'):
             final_wordset = set.union(*[r[0] for r in result])
 
+        with timed('final wordset writing'), open(kwdir+'vocab','w') as fout::
+            fout.write('\n'.join(final_set))
+
         with timed('dataframe concatenation'):
             df = pd.concat([r[1] for r in result])
 
@@ -110,7 +114,6 @@ if __name__=='__main__':
                     kw_df.to_pickle("{}{}.pkl".format(kwdir,i))
                     idx.write(kw+'\n')
                     i+=1
-        #print kw,
 
 
 
