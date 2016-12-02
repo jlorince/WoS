@@ -108,7 +108,6 @@ if __name__=='__main__':
             print 'result collected'
             with timed('pool shutdown'):
                 #try:
-                pool.join()
                 pool.terminate()
                 pool.close()
                 #except:
