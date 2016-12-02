@@ -8,7 +8,7 @@ stemmer = EnglishStemmer()
 kwdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/parsed/'
 tmpdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/temp/'
 
-debug = 10000
+debug = 5000
 
 class timed(object):
     def __init__(self,desc='command',pad='',**kwargs):
