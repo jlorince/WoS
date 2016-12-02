@@ -52,7 +52,7 @@ def parse_abs(rawtext_arr):
 def process(year):
     with timed(desc=year,pad='----'):
         with timed('keyword loading',year=year):
-            kw_current = pd.read_table('S:/UsersData_NoExpiration/jjl2228/keywords/pubs_by_year/{}.txt.gz'.format(year),header=None,names=['keyword','uid']).dropna(, nrows=debug)
+            kw_current = pd.read_table('S:/UsersData_NoExpiration/jjl2228/keywords/pubs_by_year/{}.txt.gz'.format(year),header=None,names=['keyword','uid'],nrows=debug).dropna()
         with timed('metadata loading',year=year):
             md_current = pd.read_table('P:/Projects/WoS/WoS/parsed/metadata/{}.txt.gz'.format(year),header=None, nrows=debug,
                                    names=["uid","date","pubtype","volume","issue","pages","paper_title","source_title","doctype"],
