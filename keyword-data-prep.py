@@ -74,7 +74,7 @@ def process(year):
             current['year'] = year
         with timed('saving data'):
             current.to_pickle('{}{}.pkl'.format(tmpdir,year))
-            cPickle.dump(wordset,open())
+            cPickle.dump(wordset,open('{}vocab_{}'.format(tmpdir,year)))
         print 'final datasize: {} ({})'.format(current.shape,year)
     return wordset,current
 
