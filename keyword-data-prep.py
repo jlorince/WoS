@@ -9,7 +9,7 @@ kwdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/parsed/'
 tmpdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/temp/'
 
 debug = None
-temp_data_generated=False
+temp_data_generated=True
 
 class timed(object):
     def __init__(self,desc='command',pad='',**kwargs):
