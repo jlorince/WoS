@@ -107,12 +107,12 @@ if __name__=='__main__':
             result = pool.map(process,xrange(1991,2016))
             print 'result collected'
             with timed('pool shutdown'):
-                try:
-                    pool.join()
-                    pool.terminate()
-                    pool.close()
-                except:
-                    print "exception in pool shutdown, but let's keep going..."
+                #try:
+                pool.join()
+                pool.terminate()
+                pool.close()
+                #except:
+                #    print "exception in pool shutdown, but let's keep going..."
 
 
         with timed('final wordset unioning'):
