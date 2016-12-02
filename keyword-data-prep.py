@@ -97,7 +97,12 @@ if __name__=='__main__':
             #result = main(procs)
             #if result is None:
             #    sys.exit()
-            result = pool.map_async(process,xrange(1991,2016))
+            result = pool.map(process,xrange(1991,2016))
+            try:
+                pool.terminate()
+                pool.close()
+            except:
+                pass
 
 
         with timed('final wordset unioning'):
