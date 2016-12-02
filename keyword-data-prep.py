@@ -73,7 +73,7 @@ def process(year):
     return wordset,current
 
 def main(n_procs):
-    original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+    original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)  
     pool = mp.Pool(n_procs)
     signal.signal(signal.SIGINT, original_sigint_handler)
     try:
@@ -94,9 +94,11 @@ if __name__=='__main__':
 
     with timed('keyword processing',pad=' ######## '):
         with timed('parallel processing'):
-            result = main(procs)
-            if result is None:
-                sys.exit()
+            #result = main(procs)
+            #if result is None:
+            #    sys.exit()
+            result = pool.map_async(process,xrange(1991,2016))
+
 
         with timed('final wordset unioning'):
             final_wordset = set.union(*[r[0] for r in result])
