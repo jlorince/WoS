@@ -119,7 +119,7 @@ if __name__=='__main__':
             final_wordset = set.union(*[r[0] for r in result])
 
         with timed('final wordset writing'), open(kwdir+'vocab','w') as fout:
-            fout.write('\n'.join(final_set))
+            fout.write('\n'.join(final_wordset))
 
         with timed('dataframe concatenation'):
             df = pd.concat([r[1] for r in result])
