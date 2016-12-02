@@ -106,13 +106,13 @@ if __name__=='__main__':
             pool = mp.Pool(25)
             result = pool.map(process,xrange(1991,2016))
             print 'result collected'
-            try:
-                with timed('pool shutdown'):
-                pool.join()
-                pool.terminate()
-                pool.close()
-            except:
-                pass
+            with timed('pool shutdown'):
+                try:
+                    pool.join()
+                    pool.terminate()
+                    pool.close()
+                except:
+                    print "exception in pool shutdown, but let's keep going..."
 
 
         with timed('final wordset unioning'):
