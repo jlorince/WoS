@@ -40,6 +40,8 @@ def parse_abs(rawtext_arr):
             if len(rawtext)>0:
                 cleaned = [stemmer.stem(w) for w in rawtext]
                 result.append(' '.join(cleaned))
+            else:
+                result.append('')
     wordset = set(' '.join(result).split())
     return wordset,result
 
@@ -63,10 +65,11 @@ def process(year):
         with timed('abstract parsing',year=year):
             wordset,parsed_abstracts = parse_abs(abs_current['abstract'].values)
             abs_current['abstract'] = parsed_abstracts
-        print 'new wordset length: {}'.format(len(wordset))
+        print 'wordset length: {} ({})'.format(len(wordset),year)
         with timed('data merging',year=year):
             current = kw_current.merge(md_current,on='uid',how='inner').merge(cats_current,on='uid',how='inner').merge(refs_current,on='uid',how='inner').merge(abs_current,on='uid',how='left')
         current['year'] = year
+        print 'final datasize: {} ({})'.format(current.shape,year)
     return wordset,current
 
 def main(n_procs):
