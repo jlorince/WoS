@@ -8,7 +8,7 @@ stemmer = EnglishStemmer()
 kwdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/parsed/'
 tmpdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/temp/'
 
-debug = 5000
+debug = None
 
 class timed(object):
     def __init__(self,desc='command',pad='',**kwargs):
@@ -74,7 +74,7 @@ def process(year):
             current['year'] = year
         with timed('saving data'):
             current.to_pickle('{}{}.pkl'.format(tmpdir,year))
-            cPickle.dump(wordset,open('{}vocab_{}'.format(tmpdir,year),'wb'))
+            cPickle.dump(wordset,open('{}vocab_{}.pkl'.format(tmpdir,year),'wb'))
         print 'final datasize: {} ({})'.format(current.shape,year)
     return wordset,current
 
@@ -105,14 +105,13 @@ if __name__=='__main__':
             #    sys.exit()
             pool = mp.Pool(25)
             result = pool.map(process,xrange(1991,2016))
-            print 'result collected'
+            print '----result collected----'
             with timed('pool shutdown'):
-                #try:
-                pool.terminate()
-                pool.close()
-                #except:
-                #    print "exception in pool shutdown, but let's keep going..."
-
+                try:
+                    pool.terminate()
+                    pool.close()
+                except:
+                   print "exception in pool shutdown, but let's keep going..."
 
         with timed('final wordset unioning'):
             final_wordset = set.union(*[r[0] for r in result])
