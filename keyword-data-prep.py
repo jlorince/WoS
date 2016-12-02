@@ -9,6 +9,7 @@ kwdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/parsed/'
 tmpdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/temp/'
 
 debug = None
+temp_data_generated=False
 
 class timed(object):
     def __init__(self,desc='command',pad='',**kwargs):
@@ -98,37 +99,55 @@ if __name__=='__main__':
 
     procs = 25
 
-    with timed('keyword processing',pad=' ######## '):
-        with timed('parallel processing'):
-            #result = main(procs)
-            #if result is None:
-            #    sys.exit()
-            pool = mp.Pool(25)
-            result = pool.map(process,xrange(1991,2016))
-            print '----result collected----'
-            with timed('pool shutdown'):
-                try:
-                    pool.terminate()
-                    pool.close()
-                except:
-                   print "exception in pool shutdown, but let's keep going..."
+    if not temp_data_generated:
+        with timed('keyword processing',pad=' ######## '):
+            with timed('parallel processing'):
+                #result = main(procs)
+                #if result is None:
+                #    sys.exit()
+                pool = mp.Pool(25)
+                result = pool.map(process,xrange(1991,2016))
+                print '----result collected----'
+                with timed('pool shutdown'):
+                    try:
+                        pool.terminate()
+                        pool.close()
+                    except:
+                       print "exception in pool shutdown, but let's keep going..."
 
-        with timed('final wordset unioning'):
-            final_wordset = set.union(*[r[0] for r in result])
+            with timed('final wordset unioning'):
+                final_wordset = set.union(*[r[0] for r in result])
 
-        with timed('final wordset writing'), open(kwdir+'vocab','w') as fout:
-            fout.write('\n'.join(final_wordset))
+            with timed('dataframe concatenation'):
+                df = pd.concat([r[1] for r in result])
 
-        with timed('dataframe concatenation'):
-            df = pd.concat([r[1] for r in result])
+    else:
+        with timed('keyword processing',pad=' ######## '):        
+            
+            with timed('final wordset unioning'):
+                all_wordsets = []
+                for year in xrange(1991,2016):
+                    all_wordsets.append(cPickle.load(open('{}vocab_{}.pkl'.format(tmpdir,year))))
+                    print year,
+                final_wordset = set.union(*all_wordsets)
 
-        with timed('per-keyword df generation'),open(kwdir+'vocab_idx','w') as idx:
-            i = 0
-            for kw,kw_df in df.groupby('keyword'):
-                if len(kw_df)>=100:
-                    kw_df.to_pickle("{}{}.pkl".format(kwdir,i))
-                    idx.write(kw+'\n')
-                    i+=1
+            with timed('dataframe concatenation'):
+                concat = []
+                for year in xrange(1991,2016):
+                    concat.append(pd.read_pickle('{}{}.pkl'.format(tmpdir,year)))
+                    print year,
+                df = pd.concat(concat)
+
+    with timed('final wordset writing'), open(kwdir+'vocab','w') as fout:
+        fout.write('\n'.join(final_wordset))
+
+    with timed('per-keyword df generation'),open(kwdir+'vocab_idx','w') as idx:
+        i = 0
+        for kw,kw_df in df.groupby('keyword'):
+            if len(kw_df)>=100:
+                kw_df.to_pickle("{}{}.pkl".format(kwdir,i))
+                idx.write(kw+'\n')
+                i+=1
 
 
 
