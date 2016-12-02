@@ -97,6 +97,7 @@ if __name__=='__main__':
             #result = main(procs)
             #if result is None:
             #    sys.exit()
+            pool = mp.Pool(25)
             result = pool.map(process,xrange(1991,2016))
             try:
                 pool.terminate()
