@@ -138,16 +138,22 @@ if __name__=='__main__':
                     print year,
                 df = pd.concat(concat)
 
-    with timed('final wordset writing'), open(kwdir+'vocab','w') as fout:
-        fout.write('\n'.join(final_wordset))
+        with timed('final wordset writing'):#, open(kwdir+'vocab','w') as fout:
+            #fout.write('\n'.join(final_wordset))
+            #for word in final_wordset:
+            #    fout.write(word+'\n')
+            cPickle.dump(final_wordset,open(kwdir+'vocab.pkl','w'))
 
-    with timed('per-keyword df generation'),open(kwdir+'vocab_idx','w') as idx:
-        i = 0
-        for kw,kw_df in df.groupby('keyword'):
-            if len(kw_df)>=100:
-                kw_df.to_pickle("{}{}.pkl".format(kwdir,i))
-                idx.write(kw+'\n')
-                i+=1
+        # with timed('saving full dataframe'):
+        #     concat.to_pickle(kwdir+'all_keyword_data.pkl')
 
+        with timed('per-keyword df generation'),open(kwdir+'vocab_idx','w') as idx:
+            i = 0
+            for kw,kw_df in df.groupby('keyword'):
+                n = len(kw_df)
+                if n>=100:
+                    kw_df.to_pickle("{}{}.pkl".format(kwdir,i))
+                    idx.write(kw+'\t'+str(n)+'\n')
+                    i+=1
 
 
