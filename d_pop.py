@@ -33,7 +33,7 @@ def process_year_keywords(year):
     
     kw_current = pd.read_table('S:/UsersData_NoExpiration/jjl2228/keywords/pubs_by_year/{}.txt.gz'.format(year),header=None,names=['keyword','uid']).dropna()
 
-    cats_current = pd.read_table('P:/Projects/WoS/WoS/parsed/subjects/{}.txt.gz'.format(year),header=None,names=['uid','heading','subheading','categories'],usecols=['uid','categories'])
+    cats_current = pd.read_table('P:/Projects/WoS/WoS/parsed/subjects/{}.txt.gz'.format(year),header=None,names=['uid','heading','subheading','categories'],usecols=['uid','categories']).dropna()
     cats_current['topcat'] = cats_current['categories'].apply(lambda x: x.split('|')[0])
     merged = kw_current.merge(cats_current[['uid','topcat']],on='uid')
     
