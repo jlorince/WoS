@@ -151,7 +151,7 @@ if __name__ == '__main__':
     final = pool.map(process_year_keywords,years)
     allkeys = set(sum([d.keys() for d in final],[]))
     for k in allkeys:
-        current = pd.concat([d[k] for d in final])
+        current = pd.concat([d[k] for d in final if k in d])
         current.to_pickle('P:/Projects/WoS/WoS/data/d_pop_keywords_by_field/{}.pkl'.format(k))
 
 
