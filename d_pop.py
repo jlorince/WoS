@@ -26,45 +26,27 @@ def keyword_parser(kw):
     return result
 
 
-def process_year_keywords(year,downsample='monthly'):
+def process_year_keywords(year):
 
     year_start = time.time()
 
     
-    kw = pd.read_table('{}keywords/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','n_keywords','keywords'],quoting=3)
-    kw['keywords'] = kw['keywords'].fillna('')
+    kw_current = pd.read_table('S:/UsersData_NoExpiration/jjl2228/keywords/pubs_by_year/{}.txt.gz'.format(year),header=None,names=['keyword','uid']).dropna()
 
-    metadata = pd.read_table('{}metadata/{}.txt.gz'.format(parsed_dir,year),compression='gzip',header=None,names=['uid','date','pubtype','volume','issue','pages','paper_title','source_title','doctype'],usecols=['uid','date'],parse_dates=['date'],quoting=3)
-    merged = kw.merge(metadata,on='uid')
-    rows = []
-    for row in merged.itertuples():
-        # ks = set()
-        # for k in row.keywords.split('|'):
-        #     #for char in ['.', '"', ',', '(', ')', '!', '?', ';', ':','-']:
-        #         #k = k.replace(char, ' ' + char + ' ')
-        #     k = ' '.join([lem.lemmatize(w) for w in re.sub('[^0-9a-zA-Z]+', ' ', k.lower()).split()])
-        #     ks.add(k)
-
-        ks = keyword_parser(row.keywords)
-        if downsample is None:
-            [rows.append([row.date, row.uid, k]) for k in set(ks)]
-        elif downsample == 'monthly':
-            [rows.append([datetime.datetime(year=row.date.year,month=row.date.month,day=1), row.uid, k]) for k in set(ks)]
-        elif downsample == 'yearly':
-            [rows.append([datetime.datetime(year=row.date.year,month=1,day=1), row.uid, k]) for k in set(ks)]
-
-    unstacked = pd.DataFrame(rows,columns=['date','uid','keyword'])
-    result = unstacked.groupby(['date','keyword']).count().reset_index()
-    result.columns = ['date','keyword','freq']
-
-
+    cats_current = pd.read_table('P:/Projects/WoS/WoS/parsed/subjects/{}.txt.gz'.format(year),header=None,names=['uid','heading','subheading','categories'],usecols=['uid','categories'])
+    cats_current['topcat'] = cats_current['categories'].apply(lambda x: x.split('|')[0])
+    merged = kw_current.merge(cats_current[['uid','topcat']],on='uid')
+    
+    result = merged.groupby(['topcat','keyword']).count().reset_index()
+    result['year'] = year
+    result.columns = ['topcat','keyword','freq','year']
 
 
     td = str(datetime.timedelta(seconds=time.time()-year_start))
     records = len(result)
     print "{} processed in {} (data length: {})".format(year,td,records)
 
-    return result    
+    return {cat:df for cat,df in result.groupby('topcat')}
 
 
 def process_year_pubs(year,downsample = True):
@@ -159,16 +141,23 @@ def process_year_refs(year):
     return resampled
 
 if __name__ == '__main__':
-    import math
 
     overall_start = time.time()
 
     pool = mp.Pool(N)
     #chunksize = int(math.ceil(len(years) / float(N)))
-    final_df = pd.concat(pool.map(process_year_keywords,years))
+    #final_df = pd.concat(pool.map(process_year_keywords,years))
+
+    final = pool.map(process_year_keywords,years)
+    allkeys = set(sum([d.keys() for d in final],[]))
+    for k in allkeys:
+        current = pd.concat([d[k] for d in final])
+        current.to_pickle('P:/Projects/WoS/WoS/data/d_pop_keywords_by_field/{}.pkl'.format(k))
+
+
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     print "Parsing complete  in {} (total data length: {})".format(td, len(final_df))
-    final_df.to_pickle('d_pop_keywords_lem_monthly.pkl')
+    #final_df.to_pickle('d_pop_keywords_lem_monthly.pkl')
 
     #pool.close()
 

@@ -1,8 +1,9 @@
 import numpy as np
-import gzip,time,datetime,string,signal,sys,cPickle
+import gzip,time,datetime,string,signal,sys,cPickle,codecs
 import pandas as pd
 import multiprocessing as mp
 from nltk.stem.snowball import EnglishStemmer
+from collections import Counter
 stemmer = EnglishStemmer()
 
 kwdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/parsed/'
@@ -138,16 +139,17 @@ if __name__=='__main__':
                     print year,
                 df = pd.concat(concat)
 
-        with timed('final wordset writing'):#, open(kwdir+'vocab','w') as fout:
+        with timed('final wordset writing'), codecs.open(kwdir+'vocab','w','utf-8') as fout:
             #fout.write('\n'.join(final_wordset))
-            #for word in final_wordset:
-            #    fout.write(word+'\n')
-            cPickle.dump(final_wordset,open(kwdir+'vocab.pkl','w'))
+            for word in final_wordset:
+                fout.write(word+'\n')
+            #cPickle.dump(final_wordset,open(kwdir+'vocab.pkl','w'))
 
         # with timed('saving full dataframe'):
         #     concat.to_pickle(kwdir+'all_keyword_data.pkl')
 
-        with timed('per-keyword df generation'),open(kwdir+'vocab_idx','w') as idx:
+
+        with timed('per-keyword df generation'),open(kwdir+'vocab_idx','w','utf-8') as idx:
             i = 0
             for kw,kw_df in df.groupby('keyword'):
                 n = len(kw_df)

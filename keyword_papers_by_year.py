@@ -24,19 +24,6 @@ def keyword_parser(kw):
     return result
 
 
-def keyword_parser2(kw):
-    result = []
-    for k in kw.split('|'):
-        current = [lem.lemmatize(w) for w in k.translate(None,string.punctuation).split()]
-        if len(current)==0:
-            continue
-        last = current[-1]
-        if last.startswith('(') and last.endswith(')'):
-            result+=['.'.join(current[:-1]),last.replace('(','').replace(')','')]
-        else:
-            result.append('.'.join(current))
-    return result    
-
 def process_year(year):
         start = time.time()
 
