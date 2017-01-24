@@ -13,6 +13,7 @@ import glob
 import datetime
 import logging
 from functools import partial
+import cPickle
 
 years = np.arange(1950,2016,1).astype(str)
 basedir = 'Z:/DSSHU_ANNUAL_1950-2015/'
@@ -135,6 +136,8 @@ def process(record,handles,year):
             #role = basic_data.get('role','')
             #addr_no = basic_data.get('addr_no',None)
             fullname = author.find('full_name').text
+            if fullname is None:
+                fullname = ''
 
             try:
                 seq = author.attrib['seq_no']
@@ -242,8 +245,11 @@ if __name__ == '__main__':
 
     if 'authors' in filetypes:
         with timed('prepping author data dict'):
+            #dpath = 'P:/Projects/WoS/dais_dict.pkl'
+            #if os.path.exists(dpath):
+            #    author_dict = cPickle.load(open(dpath))
+            #else:
             author_dict = {}
-
             with gzip.open('P:/Projects/WoS/dais_data.gz') as f:
                 for i,line in enumerate(f):
                     line = line.strip().split('|')
@@ -257,6 +263,7 @@ if __name__ == '__main__':
                         author_dict[uid] = {seq:author_id}
                     if i%100000==0:
                         print i,
+                #cPickle.dump(author_dict,open(dpath,'wb'))
         with timed('generating new author files'):
             record_count = 0
             for year in years:
