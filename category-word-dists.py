@@ -77,6 +77,8 @@ print vocab_len
 
 year_indices = {i:y for i,y in enumerate(xrange(1991,2016))}
 
+
+
 d = 'S:/UsersData_NoExpiration/jjl2228/keywords/cat_word_dists/'
 with timed('per-heading grouping'):
     for heading,data in deduped.groupby(['heading']):

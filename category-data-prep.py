@@ -10,7 +10,7 @@ kwdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/parsed/'
 tmpdir = 'S:/UsersData_NoExpiration/jjl2228/keywords/temp/'
 
 debug = None
-temp_data_generated = False
+temp_data_generated=True
 
 class timed(object):
     def __init__(self,desc='command',pad='',**kwargs):
@@ -47,15 +47,14 @@ def parse_abs(rawtext_arr):
                 result.append(' '.join(cleaned))
             else:
                 result.append('')
-    #wordset = set(' '.join(result).split())
-    #return wordset,result
-    return result
+    wordset = set(' '.join(result).split())
+    return wordset,result
 
 
 def process(year):
     with timed(desc=year,pad='----'):
-        #with timed('keyword loading',year=year):
-        #    kw_current = pd.read_table('S:/UsersData_NoExpiration/jjl2228/keywords/pubs_by_year/{}.txt.gz'.format(year),header=None,names=['keyword','uid'],nrows=debug).dropna()
+        with timed('keyword loading',year=year):
+            kw_current = pd.read_table('S:/UsersData_NoExpiration/jjl2228/keywords/pubs_by_year/{}.txt.gz'.format(year),header=None,names=['keyword','uid'],nrows=debug).dropna()
         with timed('metadata loading',year=year):
             md_current = pd.read_table('P:/Projects/WoS/WoS/parsed/metadata/{}.txt.gz'.format(year),header=None, nrows=debug,
                                    names=["uid","date","pubtype","volume","issue","pages","paper_title","source_title","doctype"],
@@ -67,7 +66,7 @@ def process(year):
         with timed('reference loading',year=year):
             refs_current = pd.read_table('P:/Projects/WoS/WoS/parsed/references/{}.txt.gz'.format(year),header=None,names=['uid','n_refs','refs','missing'],usecols=['uid','refs'], nrows=debug)
         with timed('abstract loading',year=year):
-            abs_current = pd.read_table('P:/Projects/WoS/WoS/parsed/abstracts/{}.txt.gz'.format(year),header=None,names=['uid','abstract'], nrows=debug).dropna()
+            abs_current = pd.read_table('P:/Projects/WoS/WoS/parsed/abstracts/{}.txt.gz'.format(year),header=None,names=['uid','abstract'], nrows=debug)
         with timed('abstract parsing',year=year):
             wordset,parsed_abstracts = parse_abs(abs_current['abstract'].values)
             abs_current['abstract'] = parsed_abstracts

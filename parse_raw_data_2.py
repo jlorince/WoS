@@ -21,10 +21,25 @@ do_logging = False
 #basedir = '/webofscience/diego/WoS_XML/xdata/data/'
 
 allowed_filetypes = ['metadata','references','authors','subjects','keywords','abstracts']
-filetypes = ['abstracts','keywords']
+filetypes = ['authors']
 
 single_file = None # if given as string, generate a single file with all desired columns
 
+
+import time,datetime
+class timed(object):
+    def __init__(self,desc='command',pad='',**kwargs):
+        self.desc = desc
+        self.kwargs = kwargs
+        self.pad = pad
+    def __enter__(self):
+        self.start = time.time()
+        print '{} started...'.format(self.desc)
+    def __exit__(self, type, value, traceback):
+        if len(self.kwargs)==0:
+            print '{}{} complete in {}{}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),self.pad)
+        else:
+            print '{}{} complete in {} ({}){}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),','.join(['{}={}'.format(*kw) for kw in self.kwargs.iteritems()]),self.pad)
 
 
 def reader(files):
@@ -112,17 +127,27 @@ def process(record,handles,year):
 
 
     if 'authors' in handles:
-
+        all_authors = []
+        all_author_names = []
         for author in paper.findall('.//summary/names/name'):
-            basic_data = author.attrib
-            dais = basic_data.get('dais_id','')
-            role = basic_data.get('role','')
-            addr_no = basic_data.get('addr_no',None)
-
+            #basic_data = author.attrib
+            #dais = basic_data.get('dais_id','')
+            #role = basic_data.get('role','')
+            #addr_no = basic_data.get('addr_no',None)
             fullname = author.find('full_name').text
 
-        for address in paper.findall('.//addresses/address_name/address_spec'):
-            pass
+            try:
+                seq = author.attrib['seq_no']
+                author_id = author_dict[uid][seq]
+            except KeyError:
+                author_id = '-1'
+
+            all_authors.append(author_id)
+            all_author_names.append(fullname)
+
+        handles['authors'].write("{}\t{}\t{}\n".format(uid,'|'.join(all_authors),'|'.join(all_author_names)))
+        #for address in paper.findall('.//addresses/address_name/address_spec'):
+        #    pass
 
 
     if 'subjects' in handles:
@@ -215,11 +240,37 @@ if __name__ == '__main__':
     #     if not os.path.exists(dname):
     #         os.mkdir(dname)
 
-    pool = mp.Pool(N)
-    #func_partial = partial(go,filetypes=filetypes,fromzip=True)
-    record_count = pool.map(go,years)
-    #pool.close()
-    td = str(datetime.timedelta(seconds=time.time()-overall_start))
-    log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
+    if 'authors' in filetypes:
+        with timed('prepping author data dict'):
+            author_dict = {}
+
+            with gzip.open('P:/Projects/WoS/dais_data.gz') as f:
+                for i,line in enumerate(f):
+                    line = line.strip().split('|')
+                    uid = line[0]
+                    author_id = line[1]
+                    seq = line[2]
+
+                    if uid in author_dict:
+                        author_dict[uid][seq] = author_id
+                    else:
+                        author_dict[uid] = {seq:author_id}
+                    if i%100000==0:
+                        print i,
+        with timed('generating new author files'):
+            record_count = 0
+            for year in years:
+                n  = go(year)
+                record_count += n
+            log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
+
+    else:
+
+        pool = mp.Pool(N)
+        #func_partial = partial(go,filetypes=filetypes,fromzip=True)
+        record_count = pool.map(go,years)
+        #pool.close()
+        td = str(datetime.timedelta(seconds=time.time()-overall_start))
+        log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
 
 
