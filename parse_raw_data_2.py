@@ -5,8 +5,6 @@ import pandas as pd
 from lxml import etree
 import multiprocessing as mp
 #from pathos import multiprocessing as mp
-#from pathos.multiprocessing import ProcessingPool as Pool
-#from pathos.multiprocessing import cpu_count
 import numpy as np
 import time
 import glob
@@ -14,18 +12,27 @@ import datetime
 import logging
 from functools import partial
 import cPickle
+from tqdm import tqdm as tq
+
+"""
+import lxml.etree as etree
+
+x = etree.parse("filename")
+print etree.tostring(x, pretty_print = True)
+"""
 
 years = np.arange(1950,2016,1).astype(str)
 basedir = 'Z:/DSSHU_ANNUAL_1950-2015/'
+#basedir = '/webofscience/diego/backup_13_01_17/WoS_XML/xdata/data/'
 output_dir = 'P:/Projects/WoS/WoS/parsed/'
+#output_dir = '/backup/home/jared/storage/wos/parsed/'
+#raw_data_path = '/backup/home/jared/storage/wos/raw/'
+raw_data_path = 'P:/Projects/WoS/'
 do_logging = False
-#basedir = '/webofscience/diego/WoS_XML/xdata/data/'
+
 
 allowed_filetypes = ['metadata','references','authors','subjects','keywords','abstracts']
 filetypes = ['authors']
-
-single_file = None # if given as string, generate a single file with all desired columns
-
 
 import time,datetime
 class timed(object):
@@ -38,9 +45,34 @@ class timed(object):
         print '{} started...'.format(self.desc)
     def __exit__(self, type, value, traceback):
         if len(self.kwargs)==0:
-            print '{}{} complete in {}{}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),self.pad)
+            logger.info('{}{} complete in {}{}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),self.pad))
         else:
-            print '{}{} complete in {} ({}){}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),','.join(['{}={}'.format(*kw) for kw in self.kwargs.iteritems()]),self.pad)
+            logger.info('{}{} complete in {} ({}){}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),','.join(['{}={}'.format(*kw) for kw in self.kwargs.iteritems()]),self.pad))
+
+
+if __name__!='__main__':
+    if 'authors' in filetypes:
+        with timed('prepping author data dict'):
+            dpath = raw_data_path+'dais_dict.pkl'
+            if os.path.exists(dpath):
+               #logger.info('loading existing dict')
+               author_dict = cPickle.load(open(dpath))
+            else:
+                #logger.info('generating dict')
+                author_dict = {}
+                with gzip.open(raw_data_path+'dais_data.gz') as f:
+                    for line in f:
+                        line = line.strip().split('|')
+                        uid = line[0]
+                        author_id = line[1]
+                        seq = line[2]
+
+                        if uid in author_dict:
+                            author_dict[uid][seq] = author_id
+                        else:
+                            author_dict[uid] = {seq:author_id}
+                    cPickle.dump(author_dict,open(dpath,'wb'),protocol=2)
+
 
 
 def reader(files):
@@ -84,7 +116,6 @@ def find_text(query):
 
 def process(record,handles,year):
 
-    overall_result = ''
 
     paper = etree.fromstring(record)
 
@@ -108,10 +139,7 @@ def process(record,handles,year):
 
         #### NEED CONFERENCE / JOURNAL / PUBLISHER INFO
 
-        if single_file:
-            overall_result += ('\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])).replace("'","").replace('"','').encode('utf8')
-        else:
-            handles['metadata'].write(('\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])+'\n').replace("'","").replace('"','').encode('utf8'))
+        handles['metadata'].write(('\t'.join([uid,date,pubtype,volume,issue,pages,paper_title,source_title,doctype])+'\n').replace("'","").replace('"','').encode('utf8'))
     
 
     if 'abstracts' in handles:
@@ -125,16 +153,29 @@ def process(record,handles,year):
             handles['abstracts'].write(('\t'.join([uid,'|'.join([p.text for p in all_p])])+'\n').encode('utf8'))
 
 
-
-
     if 'authors' in handles:
         all_authors = []
         all_author_names = []
+        author_add_idx = []
+
+        addresses = paper.findall('.//fullrecord_metadata/addresses/address_name/address_spec')
+        all_addresses = [a.find('full_address').text for a in addresses]
+        address_numbers = [a.attrib['addr_no'] for a in addresses]
+        mapping = {n:i for i,n in enumerate(address_numbers)}
+
         for author in paper.findall('.//summary/names/name'):
-            #basic_data = author.attrib
+            basic_data = author.attrib
             #dais = basic_data.get('dais_id','')
             #role = basic_data.get('role','')
-            #addr_no = basic_data.get('addr_no',None)
+
+            
+            addr_no = basic_data.get('addr_no',None)
+            if addr_no is not None:
+                addr_no = [mapping.get(a,-1) for a in addr_no.split()]
+            else:
+                addr_no = [-1]
+            author_add_idx.append(','.join(map(str,addr_no)))
+
             fullname = author.find('full_name').text
             if fullname is None:
                 fullname = ''
@@ -148,7 +189,7 @@ def process(record,handles,year):
             all_authors.append(author_id)
             all_author_names.append(fullname)
 
-        handles['authors'].write("{}\t{}\t{}\n".format(uid,'|'.join(all_authors),'|'.join(all_author_names)))
+        handles['authors'].write("{}\t{}\t{}\t{}\t{}\n".format(uid,'|'.join(all_authors),'|'.join(all_author_names),'|'.join(all_addresses),'|'.join(author_add_idx)))
         #for address in paper.findall('.//addresses/address_name/address_spec'):
         #    pass
 
@@ -180,8 +221,7 @@ def process(record,handles,year):
 
 
 
-
-def go(year,fromzip = True):
+def go(year,fromzip = False):
     year_start = time.time()
     if fromzip:
         records = zipreader(year)
@@ -189,48 +229,40 @@ def go(year,fromzip = True):
         filelist = [f for f in glob.glob(basedir+'*') if f[f.rfind('/'):][4:8]==year]
         records = reader(filelist)
     records_logged = 0
-    if single_file is not None:
-        file = '{}{}.txt.gz'.format(output_dir,single_file)
-        handles = gzip.open(file,'wb')
-    else:
-        files = ['{}{}/{}.txt.gz'.format(output_dir,kind,year) for kind in filetypes]
-        handles = dict(zip(filetypes,[gzip.open(f,'wb') for f in files]))
+    files = ['{}{}/{}.txt.gz'.format(output_dir,kind,year) for kind in filetypes]
+    handles = dict(zip(filetypes,[gzip.open(f,'wb') for f in files]))
     for record in records:
         process(record,handles,year)
         records_logged += 1
         #if records_logged % 10000 == 0:
-        #    log_handler("{} --> {} records complete".format(year,records_logged))
+        #    logger.info("{} --> {} records complete".format(year,records_logged))
     for handle in handles.values():
         handle.close()
 
     td = str(datetime.timedelta(seconds=time.time()-year_start))
-    log_handler("{} --> ALL {} records logged in {}".format(year,records_logged,td))
+    #logger.info("{} --> ALL {} records logged in {}".format(year,records_logged,td))
+    print("{} --> ALL {} records logged in {}".format(year,records_logged,td))
     return records_logged
 
-def log_handler(s):
-    if do_logging:
-        log_handler(s)
-    else:
-        print s
 
 
-
-N = mp.cpu_count()
+#N = mp.cpu_count()
+N=12
 if __name__ == '__main__':
 
     overall_start = time.time()
 
-    # if do_logging:
+    if do_logging:
+        now = datetime.datetime.now()
+        logpath = now.strftime('%Y%m%d_%H%M%S.log')
+        logger = logging.getLogger('WoS processing')
+        hdlr = logging.FileHandler(logpath)
+        formatter = logging.Formatter('%(asctime)s %(message)s')
+        hdlr.setFormatter(formatter)
+        logger.addHandler(hdlr)
+        logger.setLevel(logging.INFO)
 
-    #     logpath = sys.argv[1]
-    #     logger = logging.getLogger('WoS processing')
-    #     hdlr = logging.FileHandler(logpath)
-    #     formatter = logging.Formatter('%(asctime)s %(message)s')
-    #     hdlr.setFormatter(formatter)
-    #     logger.addHandler(hdlr)
-    #     logger.setLevel(logging.INFO)
-
-    #     filetypes = sys.argv[2:]
+    #filetypes = sys.argv[2:]
 
     # else:
 
@@ -243,41 +275,33 @@ if __name__ == '__main__':
     #     if not os.path.exists(dname):
     #         os.mkdir(dname)
 
-    if 'authors' in filetypes:
-        with timed('prepping author data dict'):
-            #dpath = 'P:/Projects/WoS/dais_dict.pkl'
-            #if os.path.exists(dpath):
-            #    author_dict = cPickle.load(open(dpath))
-            #else:
-            author_dict = {}
-            with gzip.open('P:/Projects/WoS/dais_data.gz') as f:
-                for i,line in enumerate(f):
-                    line = line.strip().split('|')
-                    uid = line[0]
-                    author_id = line[1]
-                    seq = line[2]
+    # if 'authors' in filetypes:
+    #     with timed('prepping author data dict'):
+    #         dpath = raw_data_path+'dais_dict.pkl'
+    #         if os.path.exists(dpath):
+    #            #logger.info('loading existing dict')
+    #            author_dict = cPickle.load(open(dpath))
+    #         else:
+    #             #logger.info('generating dict')
+    #             author_dict = {}
+    #             with gzip.open(raw_data_path+'dais_data.gz') as f:
+    #                 for line in tq(f):
+    #                     line = line.strip().split('|')
+    #                     uid = line[0]
+    #                     author_id = line[1]
+    #                     seq = line[2]
 
-                    if uid in author_dict:
-                        author_dict[uid][seq] = author_id
-                    else:
-                        author_dict[uid] = {seq:author_id}
-                    if i%100000==0:
-                        print i,
-                #cPickle.dump(author_dict,open(dpath,'wb'))
-        with timed('generating new author files'):
-            record_count = 0
-            for year in years:
-                n  = go(year)
-                record_count += n
-            log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
+    #                     if uid in author_dict:
+    #                         author_dict[uid][seq] = author_id
+    #                     else:
+    #                         author_dict[uid] = {seq:author_id}
+    #                 cPickle.dump(author_dict,open(dpath,'wb'),protocol=2)
 
-    else:
-
-        pool = mp.Pool(N)
-        #func_partial = partial(go,filetypes=filetypes,fromzip=True)
-        record_count = pool.map(go,years)
-        #pool.close()
-        td = str(datetime.timedelta(seconds=time.time()-overall_start))
-        log_handler("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
+    pool = mp.Pool(N)
+    #func_partial = partial(go,filetypes=filetypes,fromzip=True)
+    record_count = pool.map(go,years[::-1])
+    #pool.close()
+    td = str(datetime.timedelta(seconds=time.time()-overall_start))
+    logger.info("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
 
 
