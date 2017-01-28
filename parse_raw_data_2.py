@@ -301,7 +301,9 @@ if __name__ == '__main__':
 
     pool = mp.Pool(N)
     #func_partial = partial(go,filetypes=filetypes,fromzip=True)
-    record_count = pool.map(go,years[::-1])
+    func_partial = partial(go,fromzip=True)
+    record_count = pool.map(func_partial,years[::-1])
+    #record_count = pool.map(go,years[::-1])
     #pool.close()
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     #logger.info("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
