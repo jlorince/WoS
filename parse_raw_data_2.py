@@ -58,7 +58,7 @@ if __name__!='__main__':
             dpath = raw_data_path+'dais_dict.pkl'
             if os.path.exists(dpath):
                #logger.info('loading existing dict')
-               author_dict = cPickle.load(open(dpath))
+               author_dict = cPickle.load(open(dpath,'rb'))
             else:
                 #logger.info('generating dict')
                 author_dict = {}
