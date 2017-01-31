@@ -179,6 +179,7 @@ def process(record,handles,year):
             author_add_idx.append(','.join(map(str,addr_no)))
 
             fullname = author.find('full_name').text
+            fullname = fullname.replace('|','')
             if fullname is None:
                 fullname = ''
 
