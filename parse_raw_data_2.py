@@ -18,7 +18,7 @@ from tqdm import tqdm as tq
 import lxml.etree as etree
 
 x = etree.parse("filename")
-print etree.tostring(x, pretty_print = True)
+print(etree.tostring(x, pretty_print = True))
 """
 
 years = np.arange(1950,2016,1).astype(str)
@@ -42,14 +42,14 @@ class timed(object):
         self.pad = pad
     def __enter__(self):
         self.start = time.time()
-        print '{} started...'.format(self.desc)
+        print('{} started...'.format(self.desc))
     def __exit__(self, type, value, traceback):
         if len(self.kwargs)==0:
             #logger.info('{}{} complete in {}{}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),self.pad))
-            print '{}{} complete in {}{}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),self.pad)
+            print('{}{} complete in {}{}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),self.pad))
         else:
             #logger.info('{}{} complete in {} ({}){}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),','.join(['{}={}'.format(*kw) for kw in self.kwargs.iteritems()]),self.pad))
-            print '{}{} complete in {} ({}){}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),','.join(['{}={}'.format(*kw) for kw in self.kwargs.iteritems()]),self.pad)
+            print('{}{} complete in {} ({}){}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),','.join(['{}={}'.format(*kw) for kw in self.kwargs.iteritems()]),self.pad))
 
 
 if __name__!='__main__':
@@ -148,7 +148,7 @@ def process(record,handles,year):
 
         abstracts = paper.findall('.//abstract_text')
         if len(abstracts)>1:
-            print uid,year
+            print(uid,year)
             raise('multi-abstract?')
         for a in abstracts:
             all_p = a.findall('.//p')
@@ -308,6 +308,6 @@ if __name__ == '__main__':
     #pool.close()
     td = str(datetime.timedelta(seconds=time.time()-overall_start))
     #logger.info("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
-    print "Parsing complete: {} total records processed in {}".format(sum(record_count),td)
+    print("Parsing complete: {} total records processed in {}".format(sum(record_count),td))
 
 
