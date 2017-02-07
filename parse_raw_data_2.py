@@ -11,7 +11,7 @@ import glob
 import datetime
 import logging
 from functools import partial
-import cPickle
+import pickle # use cPickle for python 2.x
 from tqdm import tqdm as tq
 
 """
