@@ -62,11 +62,12 @@ def unpack_year(year):
         # get rid of all rows without a valid author_id
         result=result.loc[result['author_id'] != -1]  # i filter out the authors without desambiguated author id
         # filter to US only
-        result=result.dropna(subset=['affiliation']).loc[result['affiliation'].dropna().str.contains('USA')]  
+        result=result.dropna(subset=['affiliation']).loc[result['affiliation'].dropna().str.contains('USA')]
+        result['year'] = year  
 
         #result['author_name'] = result.author_name.str.lower()#apply(re_capilatizing_lastnames)
 
-        result.to_csv('{}temp/unpacked_'.format(ddir,year))
+        result.to_csv('{}temp/unpacked_{}'.format(ddir,year),index=False)
     print("{} --> raw_data rows={}, unpacked rows={}".format(year,len(df),len(result)))
     return result
 
@@ -74,7 +75,8 @@ def unpack_year(year):
 def grouping(input_df):
     
     tot_n_pubs=len(input_df)
-    result = pd.Series({'author_names':input_df.author_name.unique(),'affiliations':input_df.affiliation.unique(),'seqs':input_df.seq.values,'tot_n_pub':tot_n_pubs}) #if the values of some of the columns are list, use SERIES instead of DATAFRAME            
+    #result = pd.Series({'author_names':input_df.author_name.unique(),'affiliations':input_df.affiliation.unique(),'seqs':input_df.seq.values,'tot_n_pub':tot_n_pubs}) #if the values of some of the columns are list, use SERIES instead of DATAFRAME
+    result = pd.Series({'author_names':'|'.join(input_df.author_name.unique()),'affiliations':'|'.join(input_df.affiliation.unique()),'seqs':'|'.join(input_df.seq.values.astype(str)),'tot_n_pub':tot_n_pubs})             
     return result
  
 

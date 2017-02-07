@@ -192,7 +192,7 @@ def process(record,handles,year):
             all_authors.append(author_id)
             all_author_names.append(fullname)
 
-        handles['authors'].write("{}\t{}\t{}\t{}\t{}\n".format(uid,'|'.join(all_authors),'|'.join(all_author_names),'|'.join(all_addresses),'|'.join(author_add_idx)))
+        handles['authors'].write("{}\t{}\t{}\t{}\t{}\n".format(uid,'|'.join(all_authors),'|'.join(all_author_names),'|'.join(all_addresses),'|'.join(author_add_idx)).encode('utf8'))
         #for address in paper.findall('.//addresses/address_name/address_spec'):
         #    pass
 
