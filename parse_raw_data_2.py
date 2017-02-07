@@ -11,7 +11,7 @@ import glob
 import datetime
 import logging
 from functools import partial
-import pickle # use cPickle for python 2.x
+import pickle # use import pickle as pickle for python 2.x
 from tqdm import tqdm as tq
 
 """
@@ -58,7 +58,7 @@ if __name__!='__main__':
             dpath = raw_data_path+'dais_dict.pkl'
             if os.path.exists(dpath):
                #logger.info('loading existing dict')
-               author_dict = cPickle.load(open(dpath,'rb'))
+               author_dict = pickle.load(open(dpath,'rb'))
             else:
                 #logger.info('generating dict')
                 author_dict = {}
@@ -73,7 +73,7 @@ if __name__!='__main__':
                             author_dict[uid][seq] = author_id
                         else:
                             author_dict[uid] = {seq:author_id}
-                    cPickle.dump(author_dict,open(dpath,'wb'),protocol=2)
+                    pickle.dump(author_dict,open(dpath,'wb'),protocol=2)
 
 
 
@@ -283,7 +283,7 @@ if __name__ == '__main__':
     #         dpath = raw_data_path+'dais_dict.pkl'
     #         if os.path.exists(dpath):
     #            #logger.info('loading existing dict')
-    #            author_dict = cPickle.load(open(dpath))
+    #            author_dict = pickle.load(open(dpath))
     #         else:
     #             #logger.info('generating dict')
     #             author_dict = {}
@@ -298,7 +298,7 @@ if __name__ == '__main__':
     #                         author_dict[uid][seq] = author_id
     #                     else:
     #                         author_dict[uid] = {seq:author_id}
-    #                 cPickle.dump(author_dict,open(dpath,'wb'),protocol=2)
+    #                 pickle.dump(author_dict,open(dpath,'wb'),protocol=2)
 
     pool = mp.Pool(N)
     #func_partial = partial(go,filetypes=filetypes,fromzip=True)
