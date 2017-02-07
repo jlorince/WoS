@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import os
 import zipfile,io,gzip
@@ -11,7 +12,10 @@ import glob
 import datetime
 import logging
 from functools import partial
-import pickle # use import pickle as pickle for python 2.x
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 from tqdm import tqdm as tq
 
 """
