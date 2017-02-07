@@ -6,7 +6,7 @@ import pickle
 import multiprocessing as mp
 
 
-path="P:/Projects/WoS/julia/"
+ddir="P:/Projects/WoS/julia/"
 
 import time,datetime
 class timed(object):
@@ -16,12 +16,12 @@ class timed(object):
         self.pad = pad
     def __enter__(self):
         self.start = time.time()
-        print '{} started...'.format(self.desc)
+        print('{} started...'.format(self.desc))
     def __exit__(self, type, value, traceback):
         if len(self.kwargs)==0:
-            print '{}{} complete in {}{}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),self.pad)
+            print('{}{} complete in {}{}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),self.pad))
         else:
-            print '{}{} complete in {} ({}){}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),','.join(['{}={}'.format(*kw) for kw in self.kwargs.iteritems()]),self.pad)
+            print('{}{} complete in {} ({}){}'.format(self.pad,self.desc,str(datetime.timedelta(seconds=time.time()-self.start)),','.join(['{}={}'.format(*kw) for kw in self.kwargs.iteritems()]),self.pad))
             
 
 def process(row):
@@ -58,7 +58,7 @@ def process(row):
 def unpack_year(year):
     with timed('Processing year {}'.format(year)):
         df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'])
-        result = pd.concat([process(row[1]) for row in  df.iterrows(),total=len(df)])  
+        result = pd.concat([process(row[1]) for row in  df.iterrows()])  
         # get rid of all rows without a valid author_id
         result=result.loc[result['author_id'] != -1]  # i filter out the authors without desambiguated author id
         # filter to US only
