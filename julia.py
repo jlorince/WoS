@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from time import sleep
-import pickle
+import pickle,csv
 import multiprocessing as mp
 
 
@@ -86,21 +86,39 @@ if __name__ == '__main__':
     pool = mp.Pool(procs)
 
     FINAL = pool.map(unpack_year,range(1950,2016))
-    FINAL = pd.concat(FINAL)
 
     try:
         pool.close()
     except:
         pass
 
-    tqdm.pandas()
-    with timed('Grouping all data by author'):
-        grouped = FINAL.groupby('author_id').progress_apply(grouping).reset_index()
+    # FINAL = pd.concat(FINAL)
+    # tqdm.pandas()
+    # with timed('Grouping all data by author'):
+    #     grouped = FINAL.groupby('author_id').progress_apply(grouping).reset_index()
+    # with timed('Saving grouped data'):
+    #     grouped.to_csv("{}final.tsv".format(ddir), sep='\t',index=False)
+    # with timed("Pulling out multi-match author data"):
+    #     indices = grouped.author_name.progress_apply(lambda x: x>1)
+    #     grouped[indices].to_csv("{}lookup_multiple_author_names.tsv".format(ddir), sep='\t',index=False)
+
+    sf = gl.SFrame(FINAL[0])
+    for df in tq(FINAL[1:]):
+        sf = sf.append(gl.SFrame(df))
+
+    with timed('Grouping all data by author')::
+        grouped = sf.groupby('author_id',{'affiliation':gl.aggregate.DISTINCT('affiliation'),'author_name':gl.aggregate.DISTINCT('author_name'),'seq':gl.aggregate.CONCAT('seq'),'year':gl.aggregate.CONCAT('year')}) 
+    with timed('Formatting list data'):
+        for col in ('affiliation','author_name'):
+            grouped[col] = grouped[col].apply(lambda x: '|'.join(x))
+        for col in ('seq','year'):
+            grouped[col] = grouped[col].apply(lambda x: '|'.join(map(str,x)))
     with timed('Saving grouped data'):
-        grouped.to_csv("{}final.tsv".format(ddir), sep='\t',index=False)
+        grouped.export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
     with timed("Pulling out multi-match author data"):
         indices = grouped.author_name.progress_apply(lambda x: x>1)
         grouped[indices].to_csv("{}lookup_multiple_author_names.tsv".format(ddir), sep='\t',index=False)
+
 
 
 
