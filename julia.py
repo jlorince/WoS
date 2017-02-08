@@ -35,7 +35,8 @@ def process(row):
 
     affil = []
     if pd.isnull(row.affiliation):   # if there is no affiliation info, then affil is a list of n nans
-        affil = [np.nan]*n
+        affil = ['?']*n
+        ambig_affil = 1
     else:
         affil_list = row.affiliation.split('|') # if there is affiliation info, i build a list of affiliations                       
         
@@ -57,21 +58,26 @@ def process(row):
                         ambig_affil = 1
 
                    
-    return pd.DataFrame({'uid':[row.uid]*n,'author_id':aids,'author_name':names,'affiliation':affil,'seq':range(len(aids)),'ambig_affiliation':[ambig_affil]*n})
+    #return pd.DataFrame({'uid':[row.uid]*n,'author_id':aids,'author_name':names,'affiliation':affil,'seq':range(len(aids)),'ambig_affiliation':[ambig_affil]*n})
+    return [row.uid]*n,aids,names,affil,range(len(aids)),[ambig_affil]*n
+
 
 
 def unpack_year(year):
     with timed('Processing year {}'.format(year)):
-        df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str}).dropna()
-        try:
-            result = pd.concat([process(row[1]) for row in  df.iterrows()])  
-        except ValueError:
-            return pd.DataFrame({'uid':[],'author_id':[],'author_name':[],'affiliation':[],'seq':[]})
+        df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str})#.dropna()
+        #result = pd.concat([process(row[1]) for row in df.iterrows()])  
+        uid_list,aid_list,name_list,affil_list,seq_list,ambig_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*[process(row[1]) for row in df.iterrows()])]
+        result = pd.DataFrame({'uid':uid_list,'author_id':aid_list,'author_name':name_list,'affiliation':affil_list,'seq':seq_list,'ambig_affiliation':ambig_list})
+
+        #except ValueError:
+        #    return pd.DataFrame({'uid':[],'author_id':[],'author_name':[],'affiliation':[],'seq':[]})
+
         # get rid of all rows without a valid author_id
         result=result.loc[result['author_id'] != -1]  # i filter out the authors without desambiguated author id
         # filter to US only
         #result=result.dropna(subset=['affiliation']).loc[result['affiliation'].dropna().str.contains('USA')]
-        result=result.loc[result['affiliation'].str.contains('USA')]
+        #result=result.loc[result['affiliation'].str.contains('USA')]
         result['year'] = year  
 
         #result['author_name'] = result.author_name.str.lower()#apply(re_capilatizing_lastnames)
@@ -85,7 +91,7 @@ def grouping(input_df):
     
     tot_n_pubs=len(input_df)
     #result = pd.Series({'author_names':input_df.author_name.unique(),'affiliations':input_df.affiliation.unique(),'seqs':input_df.seq.values,'tot_n_pub':tot_n_pubs}) #if the values of some of the columns are list, use SERIES instead of DATAFRAME
-    result = pd.Series({'author_names':'|'.join(input_df.author_name.unique()),'affiliations':'|'.join(input_df.affiliation.unique()),'seqs':'|'.join(input_df.seq.values.astype(str)),'tot_n_pub':tot_n_pubs})             
+    result = pd.Series({'author_names':'|'.join(input_df.author_name.unique()),'affiliations':'|'.join(input_df.affiliation.dropna().unique()),'seqs':'|'.join(input_df.seq.values.astype(str)),'tot_n_pub':tot_n_pubs})             
     return result
  
 
@@ -115,23 +121,24 @@ if __name__ == '__main__':
     #     indices = grouped.author_name.progress_apply(lambda x: x>1)
     #     grouped[indices].to_csv("{}lookup_multiple_author_names.tsv".format(ddir), sep='\t',index=False)
 
-    if False:
-        sf = gl.SFrame(FINAL[0])
-        for df in tq(FINAL[1:]):
-            sf = sf.append(gl.SFrame(df))
+    
+    sf = gl.SFrame.read_csv('{}temp/unpacked_*'.format(ddir))
 
-        with timed('Grouping all data by author'):
-            grouped = sf.groupby('author_id',{'affiliation':gl.aggregate.DISTINCT('affiliation'),'author_name':gl.aggregate.DISTINCT('author_name'),'seq':gl.aggregate.CONCAT('seq'),'year':gl.aggregate.CONCAT('year')}) 
-        with timed('Formatting list data'):
-            for col in ('affiliation','author_name'):
-                grouped[col] = grouped[col].apply(lambda x: '|'.join(x))
-            for col in ('seq','year'):
-                grouped[col] = grouped[col].apply(lambda x: '|'.join(map(str,x)))
-        with timed("Pulling out multi-match author data"):
-            #indices = grouped.author_name.progress_apply(lambda x: x>1)
-            grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)].export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
-        with timed('Saving grouped data'):
-            grouped.export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
+    with timed('Grouping all data by author'):
+        grouped = sf.groupby('author_id',{'affiliation':gl.aggregate.DISTINCT('affiliation'),'author_name':gl.aggregate.DISTINCT('author_name'),'seq':gl.aggregate.CONCAT('seq'),'year':gl.aggregate.CONCAT('year'),'total_pubs':gl.aggregate.COUNT}) 
+    with timed('Formatting list data'):
+        grouped['affiliation'] = grouped['affiliation'].apply(lambda x: '||'.join(x))
+        grouped['author_name'] = grouped['author_name'].apply(lambda x: '|'.join(x))
+        for col in ('seq','year'):
+            grouped[col] = grouped[col].apply(lambda x: '|'.join(map(str,x)))
+    with timed("Pulling out multi-match author data"):
+        #indices = grouped.author_name.progress_apply(lambda x: x>1)
+        grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)].export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
+    with timed('Saving grouped data'):
+        grouped.export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
+    with timed('Saving USA ONLY grouped data'):
+        grouped = grouped[grouped['affiliation'].apply(lambda x: 'USA' in x)]
+        grouped.export_csv("{}final_USA.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
 
 
 
