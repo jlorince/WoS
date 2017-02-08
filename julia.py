@@ -73,26 +73,29 @@ def unpack_year(year):
         for i,row in df.iterrows():
             process_results.append(process(row))
             if (i+1)%50000==0:
-                print("{}: {}/{} ({:2f}%) complete".format(year,i,nrows,100*(i/float(nrows))))
-        uid_list,aid_list,name_list,affil_list,seq_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*process_results)]
-        result = pd.DataFrame({'uid':uid_list,'author_id':aid_list,'author_name':name_list,'affiliation':affil_list,'seq':seq_list})
+                print("{}: {}/{} ({:2f}%) complete".format(year,i+1,nrows,100*((i+1)/float(nrows))))
+        print("{}: {}/{} ({:2f}%) complete".format(year,i+1,nrows,100*((i+1)/float(nrows))))
+        with timed("{}: Condensing unpacked results".format(year)):
+            uid_list,aid_list,name_list,affil_list,seq_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*process_results)]
+            result = pd.DataFrame({'uid':uid_list,'author_id':aid_list,'author_name':name_list,'affiliation':affil_list,'seq':seq_list})
 
-        #uid_list,aid_list,name_list,affil_list,seq_list,ambig_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*[process(row[1]) for row in df.iterrows()])]
-        #result = pd.DataFrame({'uid':uid_list,'author_id':aid_list,'author_name':name_list,'affiliation':affil_list,'seq':seq_list,'ambig_affiliation':ambig_list})
+            #uid_list,aid_list,name_list,affil_list,seq_list,ambig_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*[process(row[1]) for row in df.iterrows()])]
+            #result = pd.DataFrame({'uid':uid_list,'author_id':aid_list,'author_name':name_list,'affiliation':affil_list,'seq':seq_list,'ambig_affiliation':ambig_list})
 
-        #except ValueError:
-        #    return pd.DataFrame({'uid':[],'author_id':[],'author_name':[],'affiliation':[],'seq':[]})
+            #except ValueError:
+            #    return pd.DataFrame({'uid':[],'author_id':[],'author_name':[],'affiliation':[],'seq':[]})
 
-        # get rid of all rows without a valid author_id
-        result=result.loc[result['author_id'] != -1]  # i filter out the authors without desambiguated author id
-        # filter to US only
-        #result=result.dropna(subset=['affiliation']).loc[result['affiliation'].dropna().str.contains('USA')]
-        #result=result.loc[result['affiliation'].str.contains('USA')]
-        result['year'] = year  
+            # get rid of all rows without a valid author_id
+            result=result.loc[result['author_id'] != -1]  # i filter out the authors without desambiguated author id
+            # filter to US only
+            #result=result.dropna(subset=['affiliation']).loc[result['affiliation'].dropna().str.contains('USA')]
+            #result=result.loc[result['affiliation'].str.contains('USA')]
+            result['year'] = year  
 
-        #result['author_name'] = result.author_name.str.lower()#apply(re_capilatizing_lastnames)
+            #result['author_name'] = result.author_name.str.lower()#apply(re_capilatizing_lastnames)
 
-        result.to_csv('{}temp/unpacked_{}'.format(ddir,year),index=False)
+        with timed("Saving {}: results".format(year)):
+            result.to_csv('{}temp/unpacked_{}'.format(ddir,year),index=False)
     print("{} --> raw_data rows={}, unpacked rows={}".format(year,len(df),len(result)))
     return len(result)
 
