@@ -116,22 +116,22 @@ if __name__ == '__main__':
     #     grouped[indices].to_csv("{}lookup_multiple_author_names.tsv".format(ddir), sep='\t',index=False)
 
     if False:
-    sf = gl.SFrame(FINAL[0])
-    for df in tq(FINAL[1:]):
-        sf = sf.append(gl.SFrame(df))
+        sf = gl.SFrame(FINAL[0])
+        for df in tq(FINAL[1:]):
+            sf = sf.append(gl.SFrame(df))
 
-    with timed('Grouping all data by author'):
-        grouped = sf.groupby('author_id',{'affiliation':gl.aggregate.DISTINCT('affiliation'),'author_name':gl.aggregate.DISTINCT('author_name'),'seq':gl.aggregate.CONCAT('seq'),'year':gl.aggregate.CONCAT('year')}) 
-    with timed('Formatting list data'):
-        for col in ('affiliation','author_name'):
-            grouped[col] = grouped[col].apply(lambda x: '|'.join(x))
-        for col in ('seq','year'):
-            grouped[col] = grouped[col].apply(lambda x: '|'.join(map(str,x)))
-    with timed("Pulling out multi-match author data"):
-        #indices = grouped.author_name.progress_apply(lambda x: x>1)
-        grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)].export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
-    with timed('Saving grouped data'):
-        grouped.export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
+        with timed('Grouping all data by author'):
+            grouped = sf.groupby('author_id',{'affiliation':gl.aggregate.DISTINCT('affiliation'),'author_name':gl.aggregate.DISTINCT('author_name'),'seq':gl.aggregate.CONCAT('seq'),'year':gl.aggregate.CONCAT('year')}) 
+        with timed('Formatting list data'):
+            for col in ('affiliation','author_name'):
+                grouped[col] = grouped[col].apply(lambda x: '|'.join(x))
+            for col in ('seq','year'):
+                grouped[col] = grouped[col].apply(lambda x: '|'.join(map(str,x)))
+        with timed("Pulling out multi-match author data"):
+            #indices = grouped.author_name.progress_apply(lambda x: x>1)
+            grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)].export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
+        with timed('Saving grouped data'):
+            grouped.export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
 
 
 
