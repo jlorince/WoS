@@ -56,12 +56,13 @@ def process(row):
 
 def unpack_year(year):
     with timed('Processing year {}'.format(year)):
-        df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str})
+        df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str}).dropna()
         result = pd.concat([process(row[1]) for row in  df.iterrows()])  
         # get rid of all rows without a valid author_id
         result=result.loc[result['author_id'] != -1]  # i filter out the authors without desambiguated author id
         # filter to US only
-        result=result.dropna(subset=['affiliation']).loc[result['affiliation'].dropna().str.contains('USA')]
+        #result=result.dropna(subset=['affiliation']).loc[result['affiliation'].dropna().str.contains('USA')]
+        result=result.loc[result['affiliation'].str.contains('USA')]
         result['year'] = year  
 
         #result['author_name'] = result.author_name.str.lower()#apply(re_capilatizing_lastnames)
