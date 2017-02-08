@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from time import sleep
-import pickle,csv,sys
+import pickle,csv,sys,os
 import multiprocessing as mp
 import graphlab as gl
 
@@ -85,7 +85,7 @@ def unpack_year(year):
             try:
                 uids,aids,names,affils,seqs = process(row)
             except Exception as e:
-                print(year)
+                print("-----------{}-----------".format(year))
                 raise(e)
             uid_list += uids
             aid_list += aids
