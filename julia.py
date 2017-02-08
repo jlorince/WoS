@@ -72,8 +72,8 @@ def unpack_year(year):
         nrows = len(df)
         for i,row in df.iterrows():
             process_results.append(process(row))
-            if i%10000==0:
-                print("{}: {}/{} ({:2f}%) complete".format(year,i,nrows,i/float(nrows)))
+            if (i+1)%50000==0:
+                print("{}: {}/{} ({:2f}%) complete".format(year,i,nrows,100*(i/float(nrows))))
         uid_list,aid_list,name_list,affil_list,seq_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*process_results)]
         result = pd.DataFrame({'uid':uid_list,'author_id':aid_list,'author_name':name_list,'affiliation':affil_list,'seq':seq_list})
 
