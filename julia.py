@@ -147,7 +147,7 @@ if __name__ == '__main__':
     with timed('Saving grouped data'):
         grouped.export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
     with timed('Saving USA ONLY grouped data'):
-        grouped = grouped[grouped['affiliation'].apply(lambda x: 'USA' in x)]
+        grouped = grouped[grouped['affiliation'].dropna().apply(lambda x: 'USA' in x)]
         grouped.export_csv("{}final_USA.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
 
 
