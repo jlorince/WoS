@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from time import sleep
-import pickle,csv
+import pickle,csv,sys
 import multiprocessing as mp
 import graphlab as gl
 
@@ -85,7 +85,10 @@ def grouping(input_df):
 
 if __name__ == '__main__':
 
-    procs = 30#mp.cpu_count()
+    if len(sys.argv)>1:
+        procs = int(sys.argv[1])
+    else:
+        procs = mp.cpu_count()
     pool = mp.Pool(procs)
 
     FINAL = pool.map(unpack_year,range(1950,2016))
