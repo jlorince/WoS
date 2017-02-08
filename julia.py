@@ -68,7 +68,7 @@ def unpack_year(year):
         outpath = '{}temp/unpacked_{}'.format(ddir,year)
         if os.path.exists(outpath):
             print("{} ALREADY DONE!".format(year))
-            return len(df.read_csv(outpath))
+            return len(pd.read_csv(outpath))
         df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str})#.dropna()
         #result = pd.concat([process(row[1]) for row in df.iterrows()])
         
