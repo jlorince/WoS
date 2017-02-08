@@ -30,8 +30,8 @@ def process(row):
     aids = [int(a) for a in row.author_id.split('|')] # list of author ids in that row
     n = len(aids)
     names = row.author_name.split('|')  # list of author names in that row
-    if len(names)!=n:
-        return pd.DataFrame({'uid':[],'author_id':[],'author_name':[],'affiliation':[],'seq':[]})
+    #if len(names)!=n:
+    #    return pd.DataFrame({'uid':[],'author_id':[],'author_name':[],'affiliation':[],'seq':[]})
 
     affil = []
     if pd.isnull(row.affiliation):   # if there is no affiliation info, then affil is a list of n nans
@@ -39,19 +39,25 @@ def process(row):
     else:
         affil_list = row.affiliation.split('|') # if there is affiliation info, i build a list of affiliations                       
         
-        for idx in row.idx.split('|'): ## list of affiliations indexes for each author , idx is a list of affil indexes for one author                                                           
-            if idx=='-1':
-                affil.append('?')
-                # OR:
-                # affil.append(row.affiliation)
-            else:
-                try:
-                    affil.append('|'.join([affil_list[int(i)] for i in idx.split(',')]))
-                except IndexError: 
-                    affil.append('?')
+        for idx in row.idx.split('|'): ## list of affiliations indexes for each author , idx is a list of affil indexes for one author
+            if len(affil_list)==1 or len(aids)==1:
+                affil.append(row.affiliation)
+                ambig_affil = 0
+            else:                                                           
+                if idx=='-1':
+                    affil.append(row.affiliation)
+                    ambig_affil = 1
+                else:
+                    try:
+                        affil.append('|'.join([affil_list[int(i)] for i in idx.split(',')]))
+                        ambig_affil = 0
+                    except IndexError: 
+                        #affil.append('?')
+                        affil.append(row.affiliation)
+                        ambig_affil = 1
 
                    
-    return pd.DataFrame({'uid':[row.uid]*n,'author_id':aids,'author_name':names,'affiliation':affil,'seq':range(len(aids))})
+    return pd.DataFrame({'uid':[row.uid]*n,'author_id':aids,'author_name':names,'affiliation':affil,'seq':range(len(aids)),'ambig_affiliation':[ambig_affil]*n})
 
 
 def unpack_year(year):
@@ -72,7 +78,7 @@ def unpack_year(year):
 
         result.to_csv('{}temp/unpacked_{}'.format(ddir,year),index=False)
     print("{} --> raw_data rows={}, unpacked rows={}".format(year,len(df),len(result)))
-    return result
+    return len(result)
 
 
 def grouping(input_df):
@@ -92,6 +98,7 @@ if __name__ == '__main__':
     pool = mp.Pool(procs)
 
     FINAL = pool.map(unpack_year,range(1950,2016))
+    print "FINAL DATA LENGTH: {}".format(sum(final))
 
     try:
         pool.close()
@@ -108,6 +115,7 @@ if __name__ == '__main__':
     #     indices = grouped.author_name.progress_apply(lambda x: x>1)
     #     grouped[indices].to_csv("{}lookup_multiple_author_names.tsv".format(ddir), sep='\t',index=False)
 
+    if False:
     sf = gl.SFrame(FINAL[0])
     for df in tq(FINAL[1:]):
         sf = sf.append(gl.SFrame(df))
