@@ -29,7 +29,10 @@ def process(row):
     
     aids = [int(a) for a in row.author_id.split('|')] # list of author ids in that row
     n = len(aids)
-    names = row.author_name.split('|')  # list of author names in that row
+    if pd.isnull(row.author_name):
+        names = ['?']*n
+    else:
+        names = row.author_name.split('|')  # list of author names in that row
     #if len(names)!=n:
     #    return pd.DataFrame({'uid':[],'author_id':[],'author_name':[],'affiliation':[],'seq':[]})
 
