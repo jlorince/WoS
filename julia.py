@@ -57,7 +57,10 @@ def process(row):
 def unpack_year(year):
     with timed('Processing year {}'.format(year)):
         df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str}).dropna()
-        result = pd.concat([process(row[1]) for row in  df.iterrows()])  
+        try:
+            result = pd.concat([process(row[1]) for row in  df.iterrows()])  
+        except ValueError:
+            return pd.DataFrame({'uid':[],'author_id':[],'author_name':[],'affiliation':[],'seq':[]})
         # get rid of all rows without a valid author_id
         result=result.loc[result['author_id'] != -1]  # i filter out the authors without desambiguated author id
         # filter to US only
