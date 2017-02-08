@@ -40,8 +40,6 @@ def process(row):
         affil_list = row.affiliation.split('|') # if there is affiliation info, i build a list of affiliations                       
         
         for idx in row.idx.split('|'): ## list of affiliations indexes for each author , idx is a list of affil indexes for one author                                                           
-            
-            
             if idx=='-1':
                 affil.append('?')
                 # OR:
@@ -58,7 +56,7 @@ def process(row):
 
 def unpack_year(year):
     with timed('Processing year {}'.format(year)):
-        df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'])
+        df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str})
         result = pd.concat([process(row[1]) for row in  df.iterrows()])  
         # get rid of all rows without a valid author_id
         result=result.loc[result['author_id'] != -1]  # i filter out the authors without desambiguated author id
