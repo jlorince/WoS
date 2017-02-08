@@ -65,6 +65,10 @@ def process(row):
 
 def unpack_year(year):
     with timed('Processing year {}'.format(year)):
+        outpath = '{}temp/unpacked_{}'.format(ddir,year)
+        if os.path.exists(outpath):
+            print("{} ALREADY DONE!".format(year))
+            return len(df.read_csv(outpath))
         df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str})#.dropna()
         #result = pd.concat([process(row[1]) for row in df.iterrows()])
         
@@ -78,7 +82,11 @@ def unpack_year(year):
         nrows = len(df)
         for i,row in df.iterrows():
             #process_results.append(process(row))
-            uids,aids,names,affils,seqs = process(row)
+            try:
+                uids,aids,names,affils,seqs = process(row)
+            except Exception as e:
+                print(year)
+                raise(e)
             uid_list += uids
             aid_list += aids
             name_list += names
@@ -108,7 +116,7 @@ def unpack_year(year):
             #result['author_name'] = result.author_name.str.lower()#apply(re_capilatizing_lastnames)
 
         with timed("Saving {}: results".format(year)):
-            result.to_csv('{}temp/unpacked_{}'.format(ddir,year),index=False)
+            result.to_csv(outpath,index=False)
     print("{} --> raw_data rows={}, unpacked rows={}".format(year,len(df),len(result)))
     return len(result)
 
