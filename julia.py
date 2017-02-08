@@ -68,15 +68,28 @@ def unpack_year(year):
         df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str})#.dropna()
         #result = pd.concat([process(row[1]) for row in df.iterrows()])
         
-        process_results = []
+        #process_results = []
+        uid_list = []
+        aid_list = []
+        name_list = []
+        affil_list = []
+        seq_list = []
+
         nrows = len(df)
         for i,row in df.iterrows():
-            process_results.append(process(row))
+            #process_results.append(process(row))
+            uids,aids,names,affils,seqs = process(row)
+            uid_list += uids
+            aid_list += aids
+            name_list += names
+            affil_list += affils
+            seq_list += seqs
             if (i+1)%50000==0:
                 print("{}: {}/{} ({:2f}%) complete".format(year,i+1,nrows,100*((i+1)/float(nrows))))
         print("{}: {}/{} ({:2f}%) complete".format(year,i+1,nrows,100*((i+1)/float(nrows))))
         with timed("{}: Condensing unpacked results".format(year)):
-            uid_list,aid_list,name_list,affil_list,seq_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*process_results)]
+
+            #uid_list,aid_list,name_list,affil_list,seq_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*process_results)]
             result = pd.DataFrame({'uid':uid_list,'author_id':aid_list,'author_name':name_list,'affiliation':affil_list,'seq':seq_list})
 
             #uid_list,aid_list,name_list,affil_list,seq_list,ambig_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*[process(row[1]) for row in df.iterrows()])]
