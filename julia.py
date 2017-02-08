@@ -50,7 +50,7 @@ def process(row):
                     ambig_affil = 1
                 else:
                     try:
-                        affil.append('_?_'+'|'.join([affil_list[int(i)] for i in idx.split(',')]))
+                        affil.append('|'.join([affil_list[int(i)] for i in idx.split(',')]))
                         ambig_affil = 0
                     except IndexError: 
                         #affil.append('?')
