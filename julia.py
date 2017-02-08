@@ -46,29 +46,39 @@ def process(row):
                 ambig_affil = 0
             else:                                                           
                 if idx=='-1':
-                    affil.append(row.affiliation)
+                    affil.append('_?_'+row.affiliation)
                     ambig_affil = 1
                 else:
                     try:
-                        affil.append('|'.join([affil_list[int(i)] for i in idx.split(',')]))
+                        affil.append('_?_'+'|'.join([affil_list[int(i)] for i in idx.split(',')]))
                         ambig_affil = 0
                     except IndexError: 
                         #affil.append('?')
-                        affil.append(row.affiliation)
+                        affil.append('_?_'+row.affiliation)
                         ambig_affil = 1
 
                    
     #return pd.DataFrame({'uid':[row.uid]*n,'author_id':aids,'author_name':names,'affiliation':affil,'seq':range(len(aids)),'ambig_affiliation':[ambig_affil]*n})
-    return [row.uid]*n,aids,names,affil,range(len(aids)),[ambig_affil]*n
+    return [row.uid]*n,aids,names,affil,range(len(aids))#,[ambig_affil]*n
 
 
 
 def unpack_year(year):
     with timed('Processing year {}'.format(year)):
         df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str})#.dropna()
-        #result = pd.concat([process(row[1]) for row in df.iterrows()])  
-        uid_list,aid_list,name_list,affil_list,seq_list,ambig_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*[process(row[1]) for row in df.iterrows()])]
-        result = pd.DataFrame({'uid':uid_list,'author_id':aid_list,'author_name':name_list,'affiliation':affil_list,'seq':seq_list,'ambig_affiliation':ambig_list})
+        #result = pd.concat([process(row[1]) for row in df.iterrows()])
+        
+        process_results = []
+        nrows = len(df)
+        for i,row in df.iterrows():
+            process_results.append(process(row))
+            if i%1000==0:
+                print("{}: {}/{} ({:2f}%) complete".format(year,i,nrows,i/nrows))
+        uid_list,aid_list,name_list,affil_list,seq_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*process_results)]
+        result = pd.DataFrame({'uid':uid_list,'author_id':aid_list,'author_name':name_list,'affiliation':affil_list,'seq':seq_list})
+
+        #uid_list,aid_list,name_list,affil_list,seq_list,ambig_list = [reduce(lambda x,y: x+y, seq) for seq in zip(*[process(row[1]) for row in df.iterrows()])]
+        #result = pd.DataFrame({'uid':uid_list,'author_id':aid_list,'author_name':name_list,'affiliation':affil_list,'seq':seq_list,'ambig_affiliation':ambig_list})
 
         #except ValueError:
         #    return pd.DataFrame({'uid':[],'author_id':[],'author_name':[],'affiliation':[],'seq':[]})
