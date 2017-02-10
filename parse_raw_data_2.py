@@ -183,10 +183,10 @@ def process(record,handles,year):
             author_add_idx.append(','.join(map(str,addr_no)))
 
             fullname = author.find('full_name').text
-            if fullname is None:
-                fullname = '?'
-            else:
+            if fullname is not None:
                 fullname = fullname.replace('|','').replace('\\','') # kludges
+            if not fullname:
+                fullname = '?'
 
             try:
                 seq = author.attrib['seq_no']
