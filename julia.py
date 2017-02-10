@@ -78,7 +78,7 @@ def unpack_year(year):
             except Exception as e:
                 print("DF LOAD ERROR-----------{}-----------".format(year))
                 raise(e)
-        df = pd.read_table('P:/Projects/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str})#.dropna()
+        df = pd.read_table('E:/Users/jjl2228/WoS/WoS/parsed/authors/{}.txt.gz'.format(year),header=None,names=['uid','author_id','author_name','affiliation','idx'],dtype={'uid':str,'author_id':str,'author_name':str,'affiliation':str,'idx':str})#.dropna()
         #result = pd.concat([process(row[1]) for row in df.iterrows()])
         
         #process_results = []
@@ -168,7 +168,8 @@ if __name__ == '__main__':
     sf = gl.SFrame.read_csv('{}temp/unpacked_*'.format(ddir))
 
     with timed('Grouping all data by author'):
-        grouped = sf.groupby('author_id',{'affiliation':gl.aggregate.DISTINCT('affiliation'),'author_name':gl.aggregate.DISTINCT('author_name'),'seq':gl.aggregate.CONCAT('seq'),'year':gl.aggregate.CONCAT('year'),'uid':gl.aggregate.CONCAT('uid'),'total_pubs':gl.aggregate.COUNT}) 
+        grouped = sf.groupby('author_id',{'affiliation':gl.aggregate.DISTINCT('affiliation'),'author_name':gl.aggregate.DISTINCT('author_name'),'seq':gl.aggregate.CONCAT('seq'),'year':gl.aggregate.CONCAT('year'),'uid':gl.aggregate.CONCAT('uid'),'total_pubs':gl.aggregate.COUNT})
+        print('TOTAL GROUPED DATA SIZE: {}',grouped.shape) 
     with timed('Formatting list data'):
         grouped['affiliation'] = grouped['affiliation'].apply(lambda x: '||'.join(x))
         grouped['author_name'] = grouped['author_name'].apply(lambda x: '|'.join(x))
@@ -179,11 +180,16 @@ if __name__ == '__main__':
         grouped.export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
     with timed("Pulling out multi-match author data (ALL)"):
         #indices = grouped.author_name.progress_apply(lambda x: x>1)
-        grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)].export_csv("{}multi_match_all.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)        
+        mm = grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)]
+        mm.export_csv("{}multi_match_all.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)        
+        print('TOTAL MULTI-MATCH DATA SIZE: {}',mm.shape) 
     with timed('Saving USA ONLY grouped data'):
         grouped = grouped[grouped['affiliation'].dropna().apply(lambda x: 'USA' in x)]
+        print('TOTAL USA DATA SIZE: {}',grouped.shape) 
         with timed("Pulling out multi-match author data (USA)"):
-            grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)].export_csv("{}multi_match_USA.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
+            mm = grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)]
+            mm.export_csv("{}multi_match_USA.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
+        print('TOTAL USA MULTI-MATCH DATA SIZE: {}',grouped.shape) 
         grouped.export_csv("{}final_USA.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
 
 
