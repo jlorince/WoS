@@ -5,9 +5,11 @@ from time import sleep
 import pickle,csv,sys,os
 import multiprocessing as mp
 import graphlab as gl
+gl.set_runtime_config('GRAPHLAB_DEFAULT_NUM_PYLAMBDA_WORKERS', 40)
 
 
-ddir="P:/Projects/WoS/julia/"
+#ddir="P:/Projects/WoS/julia/"
+ddir="E:/Users/jjl2228/WoS/julia/"
 
 import time,datetime
 class timed(object):
@@ -37,7 +39,7 @@ def process(row):
     #    return pd.DataFrame({'uid':[],'author_id':[],'author_name':[],'affiliation':[],'seq':[]})
 
     affil = []
-    if pd.isnull(row.affiliation):   # if there is no affiliation info, then affil is a list of n nans
+    if pd.isnull(row.affiliation):   # if there is no affiliation info, then affil is a list of ?
         affil = ['?']*n
         ambig_affil = 1
     else:
@@ -145,7 +147,7 @@ if __name__ == '__main__':
     pool = mp.Pool(procs)
 
     FINAL = pool.map(unpack_year,range(1950,2016))
-    print "FINAL DATA LENGTH: {}".format(sum(final))
+    print "FINAL DATA LENGTH: {}".format(sum(FINAL))
 
     try:
         pool.close()
@@ -166,19 +168,22 @@ if __name__ == '__main__':
     sf = gl.SFrame.read_csv('{}temp/unpacked_*'.format(ddir))
 
     with timed('Grouping all data by author'):
-        grouped = sf.groupby('author_id',{'affiliation':gl.aggregate.DISTINCT('affiliation'),'author_name':gl.aggregate.DISTINCT('author_name'),'seq':gl.aggregate.CONCAT('seq'),'year':gl.aggregate.CONCAT('year'),'total_pubs':gl.aggregate.COUNT}) 
+        grouped = sf.groupby('author_id',{'affiliation':gl.aggregate.DISTINCT('affiliation'),'author_name':gl.aggregate.DISTINCT('author_name'),'seq':gl.aggregate.CONCAT('seq'),'year':gl.aggregate.CONCAT('year'),'uid':gl.aggregate.CONCAT('uid'),'total_pubs':gl.aggregate.COUNT}) 
     with timed('Formatting list data'):
         grouped['affiliation'] = grouped['affiliation'].apply(lambda x: '||'.join(x))
         grouped['author_name'] = grouped['author_name'].apply(lambda x: '|'.join(x))
+        grouped['uid'] = grouped['uid'].apply(lambda x: '|'.join(x))
         for col in ('seq','year'):
             grouped[col] = grouped[col].apply(lambda x: '|'.join(map(str,x)))
-    with timed("Pulling out multi-match author data"):
-        #indices = grouped.author_name.progress_apply(lambda x: x>1)
-        grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)].export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
     with timed('Saving grouped data'):
         grouped.export_csv("{}final.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
+    with timed("Pulling out multi-match author data (ALL)"):
+        #indices = grouped.author_name.progress_apply(lambda x: x>1)
+        grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)].export_csv("{}multi_match_all.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)        
     with timed('Saving USA ONLY grouped data'):
         grouped = grouped[grouped['affiliation'].dropna().apply(lambda x: 'USA' in x)]
+        with timed("Pulling out multi-match author data (USA)"):
+            grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)].export_csv("{}multi_match_USA.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
         grouped.export_csv("{}final_USA.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
 
 

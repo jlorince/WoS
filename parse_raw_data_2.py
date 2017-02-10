@@ -165,7 +165,7 @@ def process(record,handles,year):
         author_add_idx = []
 
         addresses = paper.findall('.//fullrecord_metadata/addresses/address_name/address_spec')
-        all_addresses = [a.find('full_address').text for a in addresses]
+        all_addresses = [a.find('full_address').text.replace('\\','') for a in addresses]
         address_numbers = [a.attrib['addr_no'] for a in addresses]
         mapping = {n:i for i,n in enumerate(address_numbers)}
 
@@ -184,9 +184,9 @@ def process(record,handles,year):
 
             fullname = author.find('full_name').text
             if fullname is None:
-                fullname = ''
+                fullname = '?'
             else:
-                fullname = fullname.replace('|','')
+                fullname = fullname.replace('|','').replace('\\','') # kludges
 
             try:
                 seq = author.attrib['seq_no']
