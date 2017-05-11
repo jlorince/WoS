@@ -189,7 +189,7 @@ if __name__ == '__main__':
         with timed("Pulling out multi-match author data (USA)"):
             mm = grouped[grouped['author_name'].apply(lambda x: len(x.split('|'))>1)]
             mm.export_csv("{}multi_match_USA.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
-        print('TOTAL USA MULTI-MATCH DATA SIZE: {}',grouped.shape) 
+        print('TOTAL USA MULTI-MATCH DATA SIZE: {}',mm.shape) 
         grouped.export_csv("{}final_USA.tsv".format(ddir), delimiter='\t',quote_level=csv.QUOTE_NONE)
 
 
